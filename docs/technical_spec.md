@@ -13,7 +13,7 @@ Companion to [functional_spec.md](functional_spec.md). Captures the stack decisi
 | Infrastructure-as-code | **Terraform** | Cloud-agnostic, most universally recognized IaC skill; adds HCL as a small new syntax. |
 | OCR (nutrition-label screenshots) | TBD service (e.g. AWS Textract) → LLM structuring | OCR-first pipeline chosen over direct vision-LLM parsing, partly as its own distinct learning surface. |
 
-**Known gap:** native iOS builds require macOS (Xcode, Simulator, App Store Connect tooling). The user's local machine is Windows. Needs a Mac environment (owned/virtual Mac, or cloud macOS CI like GitHub Actions macOS runners / Codemagic / MacStadium) before the `ios/` app can be built or shipped. Backend, infra, and docs work is unaffected and fully Windows-native.
+**iOS build environment: MacinCloud.** The user's local machine is Windows, and native iOS development requires macOS. Decision: a MacinCloud managed dedicated-Mac plan (~$20–45/mo), remote-desktop access for full interactive Xcode use — live SwiftUI previews, Simulator, debugging, and eventually App Store Connect submission. This is a paid third-party signup the user needs to do themselves (account + payment). Backend, infra, and docs work remain fully Windows-native and unaffected.
 
 ## 2. High-Level Architecture
 
@@ -65,4 +65,3 @@ project-mentor/
 - Approval UX (push vs in-app inbox)
 - Barcode/food DB provider (Open Food Facts vs USDA vs commercial)
 - OCR service choice
-- Mac build environment for iOS
