@@ -6,5 +6,9 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+psycopg://mentor:mentor@localhost:5432/mentor"
 
+    aws_region: str = "ca-central-1"
+    cognito_user_pool_id: str
+    cognito_app_client_id: str
+
 
 settings = Settings()
