@@ -1,0 +1,47 @@
+#!/bin/bash
+set -euo pipefail
+
+dnf install -y python3.12 python3.12-pip git
+
+id -u mentor &>/dev/null || useradd -m -s /bin/bash mentor
+
+su - mentor -c "git clone https://github.com/AWZShraim/project-mentor.git"
+
+BACKEND_DIR=/home/mentor/project-mentor/backend
+
+su - mentor -c "python3.12 -m venv $BACKEND_DIR/.venv"
+su - mentor -c "$BACKEND_DIR/.venv/bin/pip install --upgrade pip"
+su - mentor -c "$BACKEND_DIR/.venv/bin/pip install -e $BACKEND_DIR"
+
+DATABASE_URL=$(aws ssm get-parameter --name "${database_url_param}" --with-decryption --region "${aws_region}" --query 'Parameter.Value' --output text)
+
+cat > "$BACKEND_DIR/.env" <<EOF
+DATABASE_URL=$DATABASE_URL
+AWS_REGION=${aws_region}
+COGNITO_USER_POOL_ID=${cognito_user_pool_id}
+COGNITO_APP_CLIENT_ID=${cognito_app_client_id}
+EOF
+
+chown -R mentor:mentor /home/mentor/project-mentor
+
+su - mentor -c "cd $BACKEND_DIR && .venv/bin/python -m alembic upgrade head"
+
+cat > /etc/systemd/system/mentor-api.service <<EOF
+[Unit]
+Description=Mentor API
+After=network.target
+
+[Service]
+User=mentor
+WorkingDirectory=$BACKEND_DIR
+ExecStart=$BACKEND_DIR/.venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+EnvironmentFile=$BACKEND_DIR/.env
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable mentor-api
+systemctl start mentor-api
