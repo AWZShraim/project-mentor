@@ -94,6 +94,42 @@ class Exercise(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
 
+class WorkoutTemplate(Base):
+    """A user's named, reusable split (e.g. "Push Day") - just an ordered
+    list of exercises. No prescribed sets/reps/weight targets for now;
+    those get logged fresh each time via WorkoutLogEntry/WorkoutSet.
+    """
+
+    __tablename__ = "workout_templates"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+    exercises: Mapped[list["WorkoutTemplateExercise"]] = relationship(
+        back_populates="template",
+        cascade="all, delete-orphan",
+        order_by="WorkoutTemplateExercise.position",
+    )
+
+
+class WorkoutTemplateExercise(Base):
+    __tablename__ = "workout_template_exercises"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    template_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("workout_templates.id"), nullable=False
+    )
+    exercise_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("exercises.id"), nullable=False
+    )
+    position: Mapped[int] = mapped_column(nullable=False)
+
+    template: Mapped["WorkoutTemplate"] = relationship(back_populates="exercises")
+    exercise: Mapped["Exercise"] = relationship()
+
+
 class WorkoutLogEntry(Base):
     __tablename__ = "workout_log_entries"
 
@@ -124,6 +160,8 @@ class WorkoutSet(Base):
     weight: Mapped[float | None] = mapped_column(Numeric)
     weight_unit: Mapped[str | None] = mapped_column(String)
     duration_seconds: Mapped[int | None]
+    distance: Mapped[float | None] = mapped_column(Numeric)
+    distance_unit: Mapped[str | None] = mapped_column(String)
 
     workout_log_entry: Mapped["WorkoutLogEntry"] = relationship(back_populates="sets")
 

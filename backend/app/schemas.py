@@ -54,3 +54,68 @@ class NutritionLogOut(NutritionLogCreate):
     id: uuid.UUID
     user_id: uuid.UUID
     created_at: datetime
+
+
+class ExerciseCreate(BaseModel):
+    name: str
+    category: str | None = None
+    muscle_groups: list[str] | None = None
+    equipment: str | None = None
+    movement_pattern: str | None = None
+    logging_type: str | None = None
+
+
+class ExerciseOut(ExerciseCreate):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    user_id: uuid.UUID | None
+    created_at: datetime
+
+
+class WorkoutTemplateCreate(BaseModel):
+    name: str
+    exercise_ids: list[uuid.UUID]
+
+
+class WorkoutTemplateOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    name: str
+    exercises: list[ExerciseOut]
+    created_at: datetime
+
+
+class WorkoutSetIn(BaseModel):
+    set_number: int
+    reps: int | None = None
+    weight: float | None = None
+    weight_unit: str | None = None
+    duration_seconds: int | None = None
+    distance: float | None = None
+    distance_unit: str | None = None
+
+
+class WorkoutSetOut(WorkoutSetIn):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+
+
+class WorkoutLogCreate(BaseModel):
+    exercise_id: uuid.UUID
+    logged_at: datetime
+    notes: str | None = None
+    sets: list[WorkoutSetIn]
+
+
+class WorkoutLogOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    exercise: ExerciseOut
+    logged_at: datetime
+    notes: str | None
+    sets: list[WorkoutSetOut]
+    created_at: datetime
