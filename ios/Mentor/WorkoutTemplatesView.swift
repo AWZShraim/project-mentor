@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct WorkoutTemplatesView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var templates: [WorkoutTemplate] = []
     @State private var isLoading = true
     @State private var errorMessage: String?
@@ -38,8 +39,11 @@ struct WorkoutTemplatesView: View {
                     }
                 }
             }
-            .navigationTitle("Splits")
+            .navigationTitle("Split")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Close") { dismiss() }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showingCreateSheet = true

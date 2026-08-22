@@ -3,6 +3,7 @@ import SwiftUI
 struct ExercisesView: View {
     @StateObject private var viewModel = ExercisesViewModel()
     @State private var showingLogSheet = false
+    @State private var showingAddExerciseSheet = false
     @State private var showingTemplatesSheet = false
     @State private var showingDatePicker = false
 
@@ -16,7 +17,7 @@ struct ExercisesView: View {
             .navigationTitle("Exercises")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Splits") { showingTemplatesSheet = true }
+                    Button("Split") { showingTemplatesSheet = true }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -30,6 +31,11 @@ struct ExercisesView: View {
                 Task { await viewModel.loadLogs() }
             }) {
                 LogWorkoutEntryView(date: viewModel.selectedDate)
+            }
+            .sheet(isPresented: $showingAddExerciseSheet, onDismiss: {
+                Task { await viewModel.loadLogs() }
+            }) {
+                AddExerciseFlowView(date: viewModel.selectedDate)
             }
             .sheet(isPresented: $showingTemplatesSheet) {
                 WorkoutTemplatesView()
@@ -73,12 +79,18 @@ struct ExercisesView: View {
             Spacer()
         } else if viewModel.logsForSelectedDate.isEmpty {
             Spacer()
-            VStack(spacing: 8) {
+            VStack(spacing: 12) {
                 Image(systemName: "dumbbell")
                     .font(.system(size: 40))
                     .foregroundStyle(.secondary)
                 Text("Nothing logged for this day")
                     .foregroundStyle(.secondary)
+                Button {
+                    showingAddExerciseSheet = true
+                } label: {
+                    Label("Add Exercise", systemImage: "plus")
+                }
+                .buttonStyle(.borderedProminent)
             }
             Spacer()
         } else {
@@ -156,6 +168,23 @@ struct WorkoutLogRow: View {
         value.truncatingRemainder(dividingBy: 1) == 0
             ? String(format: "%.0f", value)
             : String(format: "%.1f", value)
+    }
+}
+
+/// Logging individual exercises directly, without going through a saved
+/// split - reached from the empty state's "Add Exercise" button.
+struct AddExerciseFlowView: View {
+    let date: Date
+    @State private var selectedExercises: [Exercise]?
+
+    var body: some View {
+        if let exercises = selectedExercises {
+            WorkoutSetsFormView(date: date, exercises: exercises)
+        } else {
+            ExercisePickerView { exercises in
+                selectedExercises = exercises
+            }
+        }
     }
 }
 

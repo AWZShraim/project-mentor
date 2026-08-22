@@ -21,7 +21,7 @@ struct TemplatePickerView: View {
                     ContentUnavailableView(
                         "No splits yet",
                         systemImage: "list.bullet.rectangle",
-                        description: Text("Create one from the Splits screen first")
+                        description: Text("Create one from the Split screen first")
                     )
                 } else {
                     List(templates) { template in
