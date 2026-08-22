@@ -38,6 +38,7 @@ This makes nutrition logging fundamentally a **grounded retrieval + entity-resol
 - **Manual logging** against that database: sets, reps, weight, duration.
 - **Natural-language logging**: AI parses free-text workout descriptions into structured sets, matching against the base DB or the user's personal exercise library.
 - **Custom exercises**: when the AI can't match a described exercise to the base DB, it defines a new one and **saves it to the user's personal library** (not the shared base DB), so it's directly reusable next time without being re-described.
+- **Exercise metadata is visible, not just the name.** When selecting an exercise to log, the user sees its category/muscle groups/equipment/movement pattern — not just a bare name — so they can confirm the AI's idea of the exercise actually matches what they're doing. If it doesn't (e.g. a base entry says "machine" but the user's gym setup for that movement is actually a dumbbell), the user can **fork it**: create a personal copy of that exercise with corrected fields, rather than being stuck logging against a base entry that doesn't match reality. This is the same "AI never assumes, user confirms/supplies the ground truth" principle as food — just triggered by the user noticing a mismatch, not only by the AI failing to find a match.
 - **HealthKit sync**: passively pulls steps, heart rate, workouts already logged elsewhere, weight, and sleep from Apple Health, feeding context to the coach even without manual entry.
 
 ### 2.3 AI Coach — Autonomous Goal Management
