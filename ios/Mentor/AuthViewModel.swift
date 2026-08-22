@@ -10,10 +10,9 @@ final class AuthViewModel: ObservableObject {
 
     private let auth = CognitoAuthService()
     private let api = APIClient()
-    private let accessTokenKey = "mentor.accessToken"
 
     init() {
-        if KeychainHelper.read(forKey: accessTokenKey) != nil {
+        if AuthTokenStore.current != nil {
             isSignedIn = true
         }
     }
@@ -42,7 +41,7 @@ final class AuthViewModel: ObservableObject {
         errorMessage = nil
         do {
             let tokens = try await auth.signIn(email: email, password: password)
-            KeychainHelper.save(tokens.accessToken, forKey: accessTokenKey)
+            KeychainHelper.save(tokens.accessToken, forKey: AuthTokenStore.key)
             isSignedIn = true
             await loadCurrentUser()
         } catch {
@@ -51,13 +50,13 @@ final class AuthViewModel: ObservableObject {
     }
 
     func signOut() {
-        KeychainHelper.delete(forKey: accessTokenKey)
+        KeychainHelper.delete(forKey: AuthTokenStore.key)
         isSignedIn = false
         currentUser = nil
     }
 
     func loadCurrentUser() async {
-        guard let token = KeychainHelper.read(forKey: accessTokenKey) else { return }
+        guard let token = AuthTokenStore.current else { return }
         do {
             currentUser = try await api.me(accessToken: token)
         } catch {
