@@ -1,3 +1,7 @@
+import uuid
+from datetime import date as date_type
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -6,6 +10,19 @@ from app.auth import get_current_user
 from app.db import get_db
 
 router = APIRouter(tags=["nutrition"])
+
+
+@router.get("/food-items", response_model=list[schemas.FoodItemOut])
+def list_food_items(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return (
+        db.query(models.PersonalFoodLibraryItem)
+        .filter(models.PersonalFoodLibraryItem.user_id == current_user.id)
+        .order_by(models.PersonalFoodLibraryItem.name)
+        .all()
+    )
 
 
 @router.post("/food-items", response_model=schemas.FoodItemOut)
@@ -23,6 +40,25 @@ def create_food_item(
     return item
 
 
+@router.get("/nutrition-logs", response_model=list[schemas.NutritionLogOut])
+def list_nutrition_logs(
+    date: date_type,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    start = datetime.combine(date, datetime.min.time())
+    end = datetime.combine(date, datetime.max.time())
+    return (
+        db.query(models.NutritionLog)
+        .filter(
+            models.NutritionLog.user_id == current_user.id,
+            models.NutritionLog.logged_at >= start,
+            models.NutritionLog.logged_at <= end,
+        )
+        .all()
+    )
+
+
 @router.post("/nutrition-logs", response_model=schemas.NutritionLogOut)
 def create_nutrition_log(
     payload: schemas.NutritionLogCreate,
@@ -38,3 +74,36 @@ def create_nutrition_log(
     db.commit()
     db.refresh(log)
     return log
+
+
+@router.patch("/nutrition-logs/{log_id}", response_model=schemas.NutritionLogOut)
+def update_nutrition_log(
+    log_id: uuid.UUID,
+    payload: schemas.NutritionLogUpdate,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    entry = db.get(models.NutritionLog, log_id)
+    if entry is None or entry.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Nutrition log not found")
+
+    entry.quantity = payload.quantity
+    entry.quantity_unit = payload.quantity_unit
+    entry.meal_type = payload.meal_type
+
+    db.commit()
+    db.refresh(entry)
+    return entry
+
+
+@router.delete("/nutrition-logs/{log_id}", status_code=204)
+def delete_nutrition_log(
+    log_id: uuid.UUID,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    entry = db.get(models.NutritionLog, log_id)
+    if entry is None or entry.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Nutrition log not found")
+    db.delete(entry)
+    db.commit()

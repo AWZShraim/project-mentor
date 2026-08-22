@@ -48,11 +48,21 @@ class NutritionLogCreate(BaseModel):
     logged_at: datetime
 
 
-class NutritionLogOut(NutritionLogCreate):
+class NutritionLogUpdate(BaseModel):
+    quantity: float
+    quantity_unit: str
+    meal_type: str | None = None
+
+
+class NutritionLogOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
-    user_id: uuid.UUID
+    food_item: FoodItemOut
+    quantity: float
+    quantity_unit: str
+    meal_type: str | None
+    logged_at: datetime
     created_at: datetime
 
 
