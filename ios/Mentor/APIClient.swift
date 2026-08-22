@@ -173,6 +173,11 @@ final class APIClient {
         return try decoder.decode([FoodItem].self, from: data)
     }
 
+    func listRecentFoodItems(accessToken: String) async throws -> [FoodItem] {
+        let data = try await request("food-items/recent", accessToken: accessToken)
+        return try decoder.decode([FoodItem].self, from: data)
+    }
+
     func createFoodItem(
         _ payload: FoodItemCreatePayload,
         accessToken: String

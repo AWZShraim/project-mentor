@@ -53,7 +53,9 @@ struct ExercisePickerView: View {
 
     private var filteredExercises: [Exercise] {
         guard !searchText.isEmpty else { return exercises }
-        return exercises.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        return exercises
+            .filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+            .sorted { relevanceRank($0.name, matching: searchText) < relevanceRank($1.name, matching: searchText) }
     }
 
     private func toggle(_ exercise: Exercise) {

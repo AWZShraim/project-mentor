@@ -189,7 +189,9 @@ struct CreateWorkoutTemplateView: View {
         let selectedIDs = Set(selectedExercises.map(\.id))
         let remaining = allExercises.filter { !selectedIDs.contains($0.id) }
         guard !searchText.isEmpty else { return remaining }
-        return remaining.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        return remaining
+            .filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+            .sorted { relevanceRank($0.name, matching: searchText) < relevanceRank($1.name, matching: searchText) }
     }
 
     private func select(_ exercise: Exercise) {

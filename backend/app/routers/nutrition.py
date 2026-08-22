@@ -3,6 +3,7 @@ from datetime import date as date_type
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app import models, schemas
@@ -10,6 +11,30 @@ from app.auth import get_current_user
 from app.db import get_db
 
 router = APIRouter(tags=["nutrition"])
+
+
+@router.get("/food-items/recent", response_model=list[schemas.FoodItemOut])
+def list_recent_food_items(
+    limit: int = 10,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    last_logged = (
+        db.query(
+            models.NutritionLog.food_item_id,
+            func.max(models.NutritionLog.logged_at).label("last_logged_at"),
+        )
+        .filter(models.NutritionLog.user_id == current_user.id)
+        .group_by(models.NutritionLog.food_item_id)
+        .subquery()
+    )
+    return (
+        db.query(models.PersonalFoodLibraryItem)
+        .join(last_logged, models.PersonalFoodLibraryItem.id == last_logged.c.food_item_id)
+        .order_by(last_logged.c.last_logged_at.desc())
+        .limit(limit)
+        .all()
+    )
 
 
 @router.get("/food-items", response_model=list[schemas.FoodItemOut])

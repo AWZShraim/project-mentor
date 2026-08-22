@@ -108,7 +108,10 @@ private struct OpenFoodFactsSearchView: View {
         errorMessage = nil
         defer { isSearching = false }
         do {
-            results = try await offService.search(term: term)
+            let found = try await offService.search(term: term)
+            results = found.sorted {
+                relevanceRank($0.name, matching: term) < relevanceRank($1.name, matching: term)
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -121,6 +124,7 @@ private struct PersonalLibraryView: View {
     var onLogged: () -> Void
 
     @State private var items: [FoodItem] = []
+    @State private var recentItems: [FoodItem] = []
     @State private var searchText = ""
     @State private var isLoading = true
     @State private var errorMessage: String?
@@ -135,18 +139,18 @@ private struct PersonalLibraryView: View {
                 ProgressView()
             } else {
                 List {
-                    ForEach(filteredItems) { item in
-                        Button {
-                            selectedItem = item
-                        } label: {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(item.name).foregroundStyle(.primary)
-                                Text("\(Int(item.calories)) kcal / \(formattedNumber(item.servingSize))\(item.servingUnit)")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                    if searchText.isEmpty && !recentItems.isEmpty {
+                        Section("Recent") {
+                            ForEach(recentItems) { item in
+                                foodRow(item)
                             }
                         }
-                        .buttonStyle(.plain)
+                    }
+
+                    Section(searchText.isEmpty ? "All Foods" : "Results") {
+                        ForEach(filteredItems) { item in
+                            foodRow(item)
+                        }
                     }
 
                     Section {
@@ -186,9 +190,25 @@ private struct PersonalLibraryView: View {
         }
     }
 
+    private func foodRow(_ item: FoodItem) -> some View {
+        Button {
+            selectedItem = item
+        } label: {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.name).foregroundStyle(.primary)
+                Text("\(Int(item.calories)) kcal / \(formattedNumber(item.servingSize))\(item.servingUnit)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
     private var filteredItems: [FoodItem] {
         guard !searchText.isEmpty else { return items }
-        return items.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        return items
+            .filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+            .sorted { relevanceRank($0.name, matching: searchText) < relevanceRank($1.name, matching: searchText) }
     }
 
     private func load() async {
@@ -196,7 +216,10 @@ private struct PersonalLibraryView: View {
         isLoading = true
         defer { isLoading = false }
         do {
-            items = try await api.listFoodItems(accessToken: token)
+            async let itemsTask = api.listFoodItems(accessToken: token)
+            async let recentTask = api.listRecentFoodItems(accessToken: token)
+            items = try await itemsTask
+            recentItems = try await recentTask
         } catch {
             errorMessage = error.localizedDescription
         }

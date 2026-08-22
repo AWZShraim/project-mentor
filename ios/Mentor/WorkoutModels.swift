@@ -116,6 +116,19 @@ func formattedNumber(_ value: Double) -> String {
         : String(format: "%.1f", value)
 }
 
+/// Lower is more relevant - used to sort search results (exercises,
+/// personal food library, Open Food Facts) so exact/prefix matches
+/// surface above mid-string matches, rather than leaving results in
+/// whatever order the source happened to return.
+func relevanceRank(_ name: String, matching query: String) -> Int {
+    let name = name.lowercased()
+    let query = query.lowercased()
+    if name == query { return 0 }
+    if name.hasPrefix(query) { return 1 }
+    if name.contains(query) { return 2 }
+    return 3
+}
+
 enum DateFormatting {
     static let dateOnly: DateFormatter = {
         let f = DateFormatter()
