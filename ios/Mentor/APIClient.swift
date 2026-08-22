@@ -167,4 +167,56 @@ final class APIClient {
             "workout-logs/\(id)", method: "DELETE", accessToken: accessToken
         )
     }
+
+    func listFoodItems(accessToken: String) async throws -> [FoodItem] {
+        let data = try await request("food-items", accessToken: accessToken)
+        return try decoder.decode([FoodItem].self, from: data)
+    }
+
+    func createFoodItem(
+        _ payload: FoodItemCreatePayload,
+        accessToken: String
+    ) async throws -> FoodItem {
+        let body = try encoder.encode(payload)
+        let data = try await request(
+            "food-items", method: "POST", body: body, accessToken: accessToken
+        )
+        return try decoder.decode(FoodItem.self, from: data)
+    }
+
+    func listNutritionLogs(date: String, accessToken: String) async throws -> [NutritionLogRecord] {
+        let data = try await request(
+            "nutrition-logs", query: ["date": date], accessToken: accessToken
+        )
+        return try decoder.decode([NutritionLogRecord].self, from: data)
+    }
+
+    func createNutritionLog(
+        _ payload: NutritionLogCreatePayload,
+        accessToken: String
+    ) async throws -> NutritionLogRecord {
+        let body = try encoder.encode(payload)
+        let data = try await request(
+            "nutrition-logs", method: "POST", body: body, accessToken: accessToken
+        )
+        return try decoder.decode(NutritionLogRecord.self, from: data)
+    }
+
+    func updateNutritionLog(
+        id: String,
+        payload: NutritionLogUpdatePayload,
+        accessToken: String
+    ) async throws -> NutritionLogRecord {
+        let body = try encoder.encode(payload)
+        let data = try await request(
+            "nutrition-logs/\(id)", method: "PATCH", body: body, accessToken: accessToken
+        )
+        return try decoder.decode(NutritionLogRecord.self, from: data)
+    }
+
+    func deleteNutritionLog(id: String, accessToken: String) async throws {
+        _ = try await request(
+            "nutrition-logs/\(id)", method: "DELETE", accessToken: accessToken
+        )
+    }
 }
