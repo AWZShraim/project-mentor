@@ -6,7 +6,7 @@ struct ContentView: View {
     var body: some View {
         Group {
             if auth.isSignedIn {
-                signedInView
+                MainTabView(auth: auth)
             } else {
                 AuthView(auth: auth)
             }
@@ -16,19 +16,6 @@ struct ContentView: View {
                 await auth.loadCurrentUser()
             }
         }
-    }
-
-    private var signedInView: some View {
-        VStack(spacing: 16) {
-            Text("Mentor").font(.largeTitle.bold())
-            if let user = auth.currentUser {
-                Text("Signed in as \(user.email)")
-            } else {
-                ProgressView()
-            }
-            Button("Sign Out") { auth.signOut() }
-        }
-        .padding()
     }
 }
 
