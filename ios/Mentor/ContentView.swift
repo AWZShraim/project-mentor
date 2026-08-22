@@ -1,19 +1,32 @@
-//
-//  ContentView.swift
-//  Mentor
-//
-//  Created by user293510 on 8/20/26.
-//
-
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var auth = AuthViewModel()
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        Group {
+            if auth.isSignedIn {
+                signedInView
+            } else {
+                AuthView(auth: auth)
+            }
+        }
+        .task {
+            if auth.isSignedIn {
+                await auth.loadCurrentUser()
+            }
+        }
+    }
+
+    private var signedInView: some View {
+        VStack(spacing: 16) {
+            Text("Mentor").font(.largeTitle.bold())
+            if let user = auth.currentUser {
+                Text("Signed in as \(user.email)")
+            } else {
+                ProgressView()
+            }
+            Button("Sign Out") { auth.signOut() }
         }
         .padding()
     }
