@@ -6,6 +6,7 @@ struct WorkoutTemplatesView: View {
     @State private var isLoading = true
     @State private var errorMessage: String?
     @State private var showingCreateSheet = false
+    @State private var editingTemplate: WorkoutTemplate?
 
     private let api = APIClient()
 
@@ -17,13 +18,18 @@ struct WorkoutTemplatesView: View {
                 } else {
                     List {
                         ForEach(templates) { template in
-                            VStack(alignment: .leading) {
-                                Text(template.name).font(.headline)
-                                Text(template.exercises.map(\.name).joined(separator: ", "))
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(2)
+                            Button {
+                                editingTemplate = template
+                            } label: {
+                                VStack(alignment: .leading) {
+                                    Text(template.name).font(.headline)
+                                    Text(template.exercises.map(\.name).joined(separator: ", "))
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(2)
+                                }
                             }
+                            .buttonStyle(.plain)
                         }
                         .onDelete { offsets in
                             Task { await delete(at: offsets) }
@@ -57,6 +63,11 @@ struct WorkoutTemplatesView: View {
             }) {
                 CreateWorkoutTemplateView()
             }
+            .sheet(item: $editingTemplate, onDismiss: {
+                Task { await load() }
+            }) { template in
+                CreateWorkoutTemplateView(existingTemplate: template)
+            }
             .task {
                 await load()
             }
@@ -89,16 +100,24 @@ struct WorkoutTemplatesView: View {
 }
 
 struct CreateWorkoutTemplateView: View {
+    var existingTemplate: WorkoutTemplate?
+
     @Environment(\.dismiss) private var dismiss
-    @State private var name = ""
+    @State private var name: String
     @State private var allExercises: [Exercise] = []
-    @State private var selectedExercises: [Exercise] = []
+    @State private var selectedExercises: [Exercise]
     @State private var searchText = ""
     @State private var isLoadingExercises = true
     @State private var isSaving = false
     @State private var errorMessage: String?
 
     private let api = APIClient()
+
+    init(existingTemplate: WorkoutTemplate? = nil) {
+        self.existingTemplate = existingTemplate
+        _name = State(initialValue: existingTemplate?.name ?? "")
+        _selectedExercises = State(initialValue: existingTemplate?.exercises ?? [])
+    }
 
     var body: some View {
         NavigationStack {
@@ -143,13 +162,13 @@ struct CreateWorkoutTemplateView: View {
                 }
             }
             .searchable(text: $searchText, prompt: "Search exercises")
-            .navigationTitle("New Day")
+            .navigationTitle(existingTemplate == nil ? "New Day" : "Edit Day")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Create") {
+                    Button(existingTemplate == nil ? "Create" : "Save") {
                         Task { await save() }
                     }
                     .disabled(name.isEmpty || selectedExercises.isEmpty || isSaving)
@@ -198,11 +217,20 @@ struct CreateWorkoutTemplateView: View {
         errorMessage = nil
         defer { isSaving = false }
         do {
-            _ = try await api.createTemplate(
-                name: name,
-                exerciseIds: selectedExercises.map(\.id),
-                accessToken: token
-            )
+            if let existingTemplate {
+                _ = try await api.updateTemplate(
+                    id: existingTemplate.id,
+                    name: name,
+                    exerciseIds: selectedExercises.map(\.id),
+                    accessToken: token
+                )
+            } else {
+                _ = try await api.createTemplate(
+                    name: name,
+                    exerciseIds: selectedExercises.map(\.id),
+                    accessToken: token
+                )
+            }
             dismiss()
         } catch {
             errorMessage = error.localizedDescription

@@ -112,6 +112,20 @@ final class APIClient {
         return try decoder.decode(WorkoutTemplate.self, from: data)
     }
 
+    func updateTemplate(
+        id: String,
+        name: String,
+        exerciseIds: [String],
+        accessToken: String
+    ) async throws -> WorkoutTemplate {
+        let payload: [String: Any] = ["name": name, "exercise_ids": exerciseIds]
+        let body = try JSONSerialization.data(withJSONObject: payload)
+        let data = try await request(
+            "workout-templates/\(id)", method: "PATCH", body: body, accessToken: accessToken
+        )
+        return try decoder.decode(WorkoutTemplate.self, from: data)
+    }
+
     func deleteTemplate(id: String, accessToken: String) async throws {
         _ = try await request(
             "workout-templates/\(id)", method: "DELETE", accessToken: accessToken

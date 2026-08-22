@@ -258,6 +258,16 @@ private struct EditableExerciseRow: View {
                     .keyboardType(.numberPad)
                     .textFieldStyle(.roundedBorder)
             }
+
+            if entry.sets.count > 1 {
+                Button {
+                    viewModel.removeSet(at: index, from: entry)
+                } label: {
+                    Image(systemName: "minus.circle.fill")
+                        .foregroundStyle(.red)
+                }
+                .buttonStyle(.plain)
+            }
         }
     }
 }

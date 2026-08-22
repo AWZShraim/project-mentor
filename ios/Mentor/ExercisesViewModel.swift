@@ -91,6 +91,16 @@ final class ExercisesViewModel: ObservableObject {
         entry.sets.append(SetInputRow(setNumber: entry.sets.count + 1))
     }
 
+    /// Keeps at least one set - to fully remove an exercise, use
+    /// removeEntry instead so it's unambiguous which action the user meant.
+    func removeSet(at index: Int, from entry: EditableWorkoutEntry) {
+        guard entry.sets.count > 1, entry.sets.indices.contains(index) else { return }
+        entry.sets.remove(at: index)
+        for i in entry.sets.indices {
+            entry.sets[i].setNumber = i + 1
+        }
+    }
+
     /// Debounces edits so we don't fire a network request per keystroke -
     /// cancels any pending save for this entry and reschedules.
     func scheduleSave(for entry: EditableWorkoutEntry) {

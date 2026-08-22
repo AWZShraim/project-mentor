@@ -76,6 +76,54 @@ def create_workout_template(
     }
 
 
+@router.patch("/workout-templates/{template_id}", response_model=schemas.WorkoutTemplateOut)
+def update_workout_template(
+    template_id: uuid.UUID,
+    payload: schemas.WorkoutTemplateCreate,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    template = db.get(models.WorkoutTemplate, template_id)
+    if template is None or template.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    exercises = (
+        db.query(models.Exercise)
+        .filter(
+            models.Exercise.id.in_(payload.exercise_ids),
+            or_(
+                models.Exercise.user_id.is_(None),
+                models.Exercise.user_id == current_user.id,
+            ),
+        )
+        .all()
+    )
+    exercises_by_id = {e.id: e for e in exercises}
+    if len(exercises_by_id) != len(set(payload.exercise_ids)):
+        raise HTTPException(status_code=404, detail="One or more exercises not found")
+
+    template.name = payload.name
+    db.query(models.WorkoutTemplateExercise).filter(
+        models.WorkoutTemplateExercise.template_id == template.id
+    ).delete()
+
+    for i, exercise_id in enumerate(payload.exercise_ids):
+        db.add(
+            models.WorkoutTemplateExercise(
+                template_id=template.id, exercise_id=exercise_id, position=i
+            )
+        )
+    db.commit()
+    db.refresh(template)
+
+    return {
+        "id": template.id,
+        "name": template.name,
+        "exercises": [exercises_by_id[eid] for eid in payload.exercise_ids],
+        "created_at": template.created_at,
+    }
+
+
 @router.delete("/workout-templates/{template_id}", status_code=204)
 def delete_workout_template(
     template_id: uuid.UUID,
