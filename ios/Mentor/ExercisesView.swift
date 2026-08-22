@@ -12,9 +12,10 @@ struct ExercisesView: View {
             ZStack(alignment: .bottomTrailing) {
                 VStack(spacing: 0) {
                     dateHeader
-                    Divider()
+                    Divider().overlay(Theme.border)
                     content
                 }
+                .background(Theme.background)
 
                 manageDaysButton
                     .padding()
@@ -68,11 +69,11 @@ struct ExercisesView: View {
         } label: {
             Image(systemName: "calendar")
                 .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(.white)
+                .foregroundStyle(Theme.textPrimary)
                 .frame(width: 52, height: 52)
-                .background(Color.accentColor)
+                .background(Theme.purple)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
-                .shadow(radius: 4)
+                .shadow(color: Theme.purple.opacity(0.5), radius: 10)
         }
     }
 
@@ -84,12 +85,13 @@ struct ExercisesView: View {
             Spacer()
         } else if let message = viewModel.errorMessage {
             Spacer()
-            Text(message).foregroundStyle(.red).font(.footnote).padding()
+            Text(message).foregroundStyle(Theme.danger).font(.footnote).padding()
             Spacer()
         } else {
             List {
                 ForEach(viewModel.entries) { entry in
                     EditableExerciseRow(entry: entry, viewModel: viewModel)
+                        .listRowBackground(Theme.surface)
                 }
 
                 Section {
@@ -98,6 +100,8 @@ struct ExercisesView: View {
                 .listRowSeparator(.hidden)
                 .listRowBackground(Color.clear)
             }
+            .scrollContentBackground(.hidden)
+            .background(Theme.background)
             .listStyle(.plain)
         }
     }
@@ -111,14 +115,17 @@ struct ExercisesView: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
+            .tint(Theme.purple)
 
             Button {
                 showingExercisePicker = true
             } label: {
                 Label("Add Exercise", systemImage: "plus")
                     .frame(maxWidth: .infinity)
+                    .foregroundStyle(Theme.purple)
             }
             .buttonStyle(.bordered)
+            .tint(Theme.purple)
         }
         .padding(.vertical, 8)
     }
@@ -129,6 +136,7 @@ struct ExercisesView: View {
                 viewModel.goToPreviousDay()
             } label: {
                 Image(systemName: "chevron.left")
+                    .foregroundStyle(Theme.purple)
             }
 
             Spacer()
@@ -138,7 +146,7 @@ struct ExercisesView: View {
             } label: {
                 Text(viewModel.selectedDate.formatted(date: .abbreviated, time: .omitted))
                     .font(.headline)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Theme.textPrimary)
             }
 
             Spacer()
@@ -147,6 +155,7 @@ struct ExercisesView: View {
                 viewModel.goToNextDay()
             } label: {
                 Image(systemName: "chevron.right")
+                    .foregroundStyle(Theme.purple)
             }
         }
         .padding()
@@ -160,14 +169,16 @@ private struct EditableExerciseRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(entry.exercise.name).font(.headline)
+                Text(entry.exercise.name)
+                    .font(.headline)
+                    .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 unitPicker
                 Button {
                     viewModel.removeEntry(entry)
                 } label: {
                     Image(systemName: "trash")
-                        .foregroundStyle(.red)
+                        .foregroundStyle(Theme.danger)
                 }
                 .buttonStyle(.plain)
             }
@@ -181,6 +192,7 @@ private struct EditableExerciseRow: View {
             } label: {
                 Label("Add Set", systemImage: "plus")
                     .font(.caption)
+                    .foregroundStyle(Theme.blue)
             }
         }
         .padding(.vertical, 8)
@@ -205,6 +217,7 @@ private struct EditableExerciseRow: View {
             }
             .pickerStyle(.menu)
             .font(.caption)
+            .tint(Theme.blue)
         case "distance":
             Picker("Unit", selection: $entry.distanceUnit) {
                 Text("mile").tag("mile")
@@ -212,6 +225,7 @@ private struct EditableExerciseRow: View {
             }
             .pickerStyle(.menu)
             .font(.caption)
+            .tint(Theme.blue)
         default:
             EmptyView()
         }
@@ -221,8 +235,8 @@ private struct EditableExerciseRow: View {
     private func setRow(row: Binding<SetInputRow>) -> some View {
         HStack {
             Text("Set \(row.wrappedValue.setNumber)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.stat(11, weight: .medium))
+                .foregroundStyle(Theme.textSecondary)
                 .frame(width: 44, alignment: .leading)
 
             switch entry.exercise.loggingType {
@@ -259,7 +273,7 @@ private struct EditableExerciseRow: View {
                     viewModel.removeSet(id: row.wrappedValue.id, from: entry)
                 } label: {
                     Image(systemName: "minus.circle.fill")
-                        .foregroundStyle(.red)
+                        .foregroundStyle(Theme.danger)
                 }
                 .buttonStyle(.plain)
             }

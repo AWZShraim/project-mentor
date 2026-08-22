@@ -31,11 +31,13 @@ struct CreateFoodItemView: View {
                     numberRow("Carbs (g)", $carbs)
                     numberRow("Fat (g)", $fat)
                 }
+                .listRowBackground(Theme.surface)
 
                 Section("Food") {
                     TextField("Name", text: $name)
                     TextField("Brand (optional)", text: $brand)
                 }
+                .listRowBackground(Theme.surface)
 
                 Section("Serving Size") {
                     HStack {
@@ -44,17 +46,21 @@ struct CreateFoodItemView: View {
                         TextField("Unit (g, ml, ...)", text: $servingUnit)
                     }
                 }
+                .listRowBackground(Theme.surface)
 
                 Section("Optional") {
                     numberRow("Fiber (g)", $fiber)
                     numberRow("Sugar (g)", $sugar)
                     numberRow("Sodium (mg)", $sodium)
                 }
+                .listRowBackground(Theme.surface)
 
                 if let message = errorMessage {
-                    Text(message).foregroundStyle(.red).font(.footnote)
+                    Text(message).foregroundStyle(Theme.danger).font(.footnote)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Theme.background)
             .navigationTitle("New Food")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -73,8 +79,11 @@ struct CreateFoodItemView: View {
     private func numberRow(_ label: String, _ text: Binding<String>) -> some View {
         HStack {
             Text(label)
+                .foregroundStyle(Theme.textPrimary)
             Spacer()
             TextField("0", text: text)
+                .font(.stat(15, weight: .medium))
+                .foregroundStyle(Theme.purple)
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
         }

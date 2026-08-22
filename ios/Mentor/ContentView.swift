@@ -11,6 +11,8 @@ struct ContentView: View {
                 AuthView(auth: auth)
             }
         }
+        .tint(Theme.purple)
+        .preferredColorScheme(.dark)
         .task {
             if auth.isSignedIn {
                 await auth.loadCurrentUser()

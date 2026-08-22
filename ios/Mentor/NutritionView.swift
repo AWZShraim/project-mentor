@@ -13,6 +13,7 @@ struct NutritionView: View {
                 Divider()
                 content
             }
+            .background(Theme.background)
             .navigationTitle("Nutrition")
             .sheet(isPresented: Binding(
                 get: { addingMealType != nil },
@@ -59,7 +60,7 @@ struct NutritionView: View {
             Spacer()
         } else if let message = viewModel.errorMessage {
             Spacer()
-            Text(message).foregroundStyle(.red).font(.footnote).padding()
+            Text(message).foregroundStyle(Theme.danger).font(.footnote).padding()
             Spacer()
         } else {
             List {
@@ -69,31 +70,50 @@ struct NutritionView: View {
                     mealSection(mealType)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Theme.background)
             .listStyle(.insetGrouped)
         }
     }
 
     private var dailyTotalsSection: some View {
         Section {
-            VStack(spacing: 8) {
-                Text("\(Int(viewModel.totalCalories)) kcal")
-                    .font(.title2.bold())
-                HStack(spacing: 16) {
-                    macroLabel("Protein", viewModel.totalProtein)
-                    macroLabel("Carbs", viewModel.totalCarbs)
-                    macroLabel("Fat", viewModel.totalFat)
+            VStack(spacing: 10) {
+                Text("\(Int(viewModel.totalCalories))")
+                    .font(.stat(30))
+                    .foregroundStyle(Theme.purple)
+                    .shadow(color: Theme.purple.opacity(0.5), radius: 10)
+                Text("kcal today")
+                    .font(.caption)
+                    .foregroundStyle(Theme.textSecondary)
+
+                HStack(spacing: 10) {
+                    macroChip("Protein", viewModel.totalProtein)
+                    macroChip("Carbs", viewModel.totalCarbs)
+                    macroChip("Fat", viewModel.totalFat)
                 }
+                .padding(.top, 4)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
+            .padding(.vertical, 10)
+            .listRowBackground(Theme.surface)
         }
     }
 
-    private func macroLabel(_ name: String, _ grams: Double) -> some View {
-        VStack {
-            Text("\(Int(grams))g").font(.headline)
-            Text(name).font(.caption).foregroundStyle(.secondary)
+    private func macroChip(_ name: String, _ grams: Double) -> some View {
+        VStack(spacing: 2) {
+            Text("\(Int(grams))g")
+                .font(.stat(13))
+                .foregroundStyle(Theme.blue)
+            Text(name)
+                .font(.system(size: 9, weight: .medium))
+                .textCase(.uppercase)
+                .foregroundStyle(Theme.textSecondary)
         }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
+        .background(Theme.blueBg)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private func mealSection(_ mealType: String) -> some View {
@@ -125,10 +145,14 @@ struct NutritionView: View {
             } label: {
                 Label("Add Food", systemImage: "plus")
                     .font(.subheadline)
+                    .foregroundStyle(Theme.purple)
             }
         } label: {
-            Text(mealType.capitalized).font(.headline)
+            Text(mealType.capitalized)
+                .font(.headline)
+                .foregroundStyle(Theme.textPrimary)
         }
+        .listRowBackground(Theme.surface)
     }
 
     private var dateHeader: some View {
@@ -137,6 +161,7 @@ struct NutritionView: View {
                 viewModel.goToPreviousDay()
             } label: {
                 Image(systemName: "chevron.left")
+                    .foregroundStyle(Theme.purple)
             }
 
             Spacer()
@@ -146,7 +171,7 @@ struct NutritionView: View {
             } label: {
                 Text(viewModel.selectedDate.formatted(date: .abbreviated, time: .omitted))
                     .font(.headline)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Theme.textPrimary)
             }
 
             Spacer()
@@ -155,6 +180,7 @@ struct NutritionView: View {
                 viewModel.goToNextDay()
             } label: {
                 Image(systemName: "chevron.right")
+                    .foregroundStyle(Theme.purple)
             }
         }
         .padding()
@@ -166,10 +192,12 @@ private struct NutritionLogRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(entry.foodItem.name).font(.body)
+            Text(entry.foodItem.name)
+                .font(.body)
+                .foregroundStyle(Theme.textPrimary)
             Text("\(formattedNumber(entry.quantity))\(entry.quantityUnit) \u{00B7} \(Int(entry.calorieContribution)) kcal")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.stat(11, weight: .medium))
+                .foregroundStyle(Theme.purpleSoft)
         }
     }
 }

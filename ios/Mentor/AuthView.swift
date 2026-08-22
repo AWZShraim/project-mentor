@@ -10,7 +10,10 @@ struct AuthView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("Mentor").font(.largeTitle.bold())
+            Text("Mentor")
+                .font(.system(size: 36, weight: .bold))
+                .foregroundStyle(Theme.purple)
+                .shadow(color: Theme.purple.opacity(0.5), radius: 14)
 
             if auth.pendingConfirmation {
                 TextField("Confirmation code", text: $confirmationCode)
@@ -20,6 +23,7 @@ struct AuthView: View {
                     Task { await auth.confirmSignUp(email: email, code: confirmationCode) }
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(Theme.purple)
             } else {
                 TextField("Email", text: $email)
                     .textFieldStyle(.roundedBorder)
@@ -38,17 +42,21 @@ struct AuthView: View {
                     }
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(Theme.purple)
 
                 Button(isSigningUp ? "Have an account? Sign in" : "New here? Sign up") {
                     isSigningUp.toggle()
                 }
                 .font(.footnote)
+                .foregroundStyle(Theme.blue)
             }
 
             if let message = auth.errorMessage {
-                Text(message).foregroundStyle(.red).font(.footnote)
+                Text(message).foregroundStyle(Theme.danger).font(.footnote)
             }
         }
         .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.background)
     }
 }

@@ -23,6 +23,7 @@ struct AddFoodView: View {
                     PersonalLibraryView(mealType: mealType, date: date, onLogged: { dismiss() })
                 }
             }
+            .background(Theme.background)
             .navigationTitle("Add Food")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -53,6 +54,7 @@ private struct OpenFoodFactsSearchView: View {
                     .textFieldStyle(.roundedBorder)
                     .onSubmit { Task { await search() } }
                 Button("Search") { Task { await search() } }
+                    .tint(Theme.purple)
                     .disabled(searchText.trimmingCharacters(in: .whitespaces).isEmpty)
             }
             .padding(.horizontal)
@@ -64,12 +66,12 @@ private struct OpenFoodFactsSearchView: View {
                 Spacer()
             } else if let message = errorMessage {
                 Spacer()
-                Text(message).foregroundStyle(.red).font(.footnote).padding()
+                Text(message).foregroundStyle(Theme.danger).font(.footnote).padding()
                 Spacer()
             } else if results.isEmpty {
                 Spacer()
                 Text("Search Open Food Facts for packaged foods")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.textSecondary)
                     .font(.footnote)
                     .multilineTextAlignment(.center)
                     .padding()
@@ -80,17 +82,21 @@ private struct OpenFoodFactsSearchView: View {
                         selectedProduct = product
                     } label: {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(product.name).foregroundStyle(.primary)
+                            Text(product.name).foregroundStyle(Theme.textPrimary)
                             Text("\(Int(product.caloriesPer100g)) kcal / 100g" + (product.brand.map { " \u{00B7} \($0)" } ?? ""))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .font(.stat(11, weight: .medium))
+                                .foregroundStyle(Theme.purpleSoft)
                         }
                     }
                     .buttonStyle(.plain)
+                    .listRowBackground(Theme.surface)
                 }
+                .scrollContentBackground(.hidden)
+                .background(Theme.background)
                 .listStyle(.plain)
             }
         }
+        .background(Theme.background)
         .sheet(item: $selectedProduct) { product in
             LogFoodQuantityView(
                 foodSource: .openFoodFacts(product),
@@ -145,6 +151,7 @@ private struct PersonalLibraryView: View {
                                 foodRow(item)
                             }
                         }
+                        .listRowBackground(Theme.surface)
                     }
 
                     Section(searchText.isEmpty ? "All Foods" : "Results") {
@@ -152,6 +159,7 @@ private struct PersonalLibraryView: View {
                             foodRow(item)
                         }
                     }
+                    .listRowBackground(Theme.surface)
 
                     Section {
                         Button {
@@ -161,16 +169,21 @@ private struct PersonalLibraryView: View {
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent)
+                        .tint(Theme.purple)
                     }
                     .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
 
                     if let message = errorMessage {
-                        Text(message).foregroundStyle(.red).font(.footnote)
+                        Text(message).foregroundStyle(Theme.danger).font(.footnote)
                     }
                 }
+                .scrollContentBackground(.hidden)
+                .background(Theme.background)
                 .listStyle(.plain)
             }
         }
+        .background(Theme.background)
         .searchable(text: $searchText, prompt: "Search your foods")
         .sheet(item: $selectedItem) { item in
             LogFoodQuantityView(
@@ -195,10 +208,10 @@ private struct PersonalLibraryView: View {
             selectedItem = item
         } label: {
             VStack(alignment: .leading, spacing: 2) {
-                Text(item.name).foregroundStyle(.primary)
+                Text(item.name).foregroundStyle(Theme.textPrimary)
                 Text("\(Int(item.calories)) kcal / \(formattedNumber(item.servingSize))\(item.servingUnit)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.stat(11, weight: .medium))
+                    .foregroundStyle(Theme.purpleSoft)
             }
         }
         .buttonStyle(.plain)

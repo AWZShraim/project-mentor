@@ -22,7 +22,10 @@ struct ExercisePickerView: View {
                     exerciseRow(exercise)
                 }
                 .buttonStyle(.plain)
+                .listRowBackground(Theme.surface)
             }
+            .scrollContentBackground(.hidden)
+            .background(Theme.background)
             .searchable(text: $searchText, prompt: "Search exercises")
             .navigationTitle("Choose Exercises")
             .toolbar {
@@ -42,7 +45,7 @@ struct ExercisePickerView: View {
                 if isLoading {
                     ProgressView()
                 } else if let message = errorMessage {
-                    Text(message).foregroundStyle(.red).padding()
+                    Text(message).foregroundStyle(Theme.danger).padding()
                 }
             }
             .task {
@@ -74,15 +77,15 @@ struct ExercisePickerView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(exercise.name)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Theme.textPrimary)
                 Text(metadataLine(exercise))
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.textSecondary)
             }
             Spacer()
             if selectedIDs.contains(exercise.id) {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(.tint)
+                    .foregroundStyle(Theme.purple)
             }
         }
     }

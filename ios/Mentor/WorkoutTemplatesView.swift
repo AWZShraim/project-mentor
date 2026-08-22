@@ -22,14 +22,17 @@ struct WorkoutTemplatesView: View {
                                 editingTemplate = template
                             } label: {
                                 VStack(alignment: .leading) {
-                                    Text(template.name).font(.headline)
+                                    Text(template.name)
+                                        .font(.headline)
+                                        .foregroundStyle(Theme.textPrimary)
                                     Text(template.exercises.map(\.name).joined(separator: ", "))
                                         .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                        .foregroundStyle(Theme.textSecondary)
                                         .lineLimit(2)
                                 }
                             }
                             .buttonStyle(.plain)
+                            .listRowBackground(Theme.surface)
                         }
                         .onDelete { offsets in
                             Task { await delete(at: offsets) }
@@ -43,15 +46,20 @@ struct WorkoutTemplatesView: View {
                                     .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(.borderedProminent)
+                            .tint(Theme.purple)
                         }
                         .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
 
                         if let message = errorMessage {
-                            Text(message).foregroundStyle(.red).font(.footnote)
+                            Text(message).foregroundStyle(Theme.danger).font(.footnote)
                         }
                     }
+                    .scrollContentBackground(.hidden)
+                    .background(Theme.background)
                 }
             }
+            .background(Theme.background)
             .navigationTitle("Days")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -134,14 +142,15 @@ struct CreateWorkoutTemplateView: View {
                             } label: {
                                 HStack {
                                     Text(exercise.name)
-                                        .foregroundStyle(.primary)
+                                        .foregroundStyle(Theme.textPrimary)
                                     Spacer()
                                     Image(systemName: "checkmark.circle.fill")
-                                        .foregroundStyle(.tint)
+                                        .foregroundStyle(Theme.purple)
                                 }
                             }
                             .buttonStyle(.plain)
                         }
+                        .listRowBackground(Theme.surface)
                     }
                 }
 
@@ -151,16 +160,19 @@ struct CreateWorkoutTemplateView: View {
                             select(exercise)
                         } label: {
                             Text(exercise.name)
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(Theme.textPrimary)
                         }
                         .buttonStyle(.plain)
                     }
+                    .listRowBackground(Theme.surface)
                 }
 
                 if let message = errorMessage {
-                    Text(message).foregroundStyle(.red).font(.footnote)
+                    Text(message).foregroundStyle(Theme.danger).font(.footnote)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Theme.background)
             .searchable(text: $searchText, prompt: "Search exercises")
             .navigationTitle(existingTemplate == nil ? "New Day" : "Edit Day")
             .toolbar {

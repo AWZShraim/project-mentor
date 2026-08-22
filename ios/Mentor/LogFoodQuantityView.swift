@@ -38,19 +38,24 @@ struct LogFoodQuantityView: View {
                 Section(displayName) {
                     HStack {
                         Text("Quantity")
+                            .foregroundStyle(Theme.textPrimary)
                         Spacer()
                         TextField("Amount", text: $quantity)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
                             .frame(width: 80)
                         Text(servingUnit)
+                            .foregroundStyle(Theme.textSecondary)
                     }
                 }
+                .listRowBackground(Theme.surface)
 
                 if let message = errorMessage {
-                    Text(message).foregroundStyle(.red).font(.footnote)
+                    Text(message).foregroundStyle(Theme.danger).font(.footnote)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Theme.background)
             .navigationTitle("Log Food")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

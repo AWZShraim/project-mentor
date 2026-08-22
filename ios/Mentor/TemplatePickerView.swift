@@ -16,7 +16,7 @@ struct TemplatePickerView: View {
                 if isLoading {
                     ProgressView()
                 } else if let message = errorMessage {
-                    Text(message).foregroundStyle(.red).padding()
+                    Text(message).foregroundStyle(Theme.danger).padding()
                 } else if templates.isEmpty {
                     ContentUnavailableView(
                         "No days yet",
@@ -29,16 +29,22 @@ struct TemplatePickerView: View {
                             onSelect(template.exercises)
                         } label: {
                             VStack(alignment: .leading) {
-                                Text(template.name).font(.headline)
+                                Text(template.name)
+                                    .font(.headline)
+                                    .foregroundStyle(Theme.textPrimary)
                                 Text("\(template.exercises.count) exercises")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Theme.textSecondary)
                             }
                         }
                         .buttonStyle(.plain)
+                        .listRowBackground(Theme.surface)
                     }
+                    .scrollContentBackground(.hidden)
+                    .background(Theme.background)
                 }
             }
+            .background(Theme.background)
             .navigationTitle("Choose a Day")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
