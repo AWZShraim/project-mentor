@@ -41,7 +41,7 @@ final class AuthViewModel: ObservableObject {
         errorMessage = nil
         do {
             let tokens = try await auth.signIn(email: email, password: password)
-            KeychainHelper.save(tokens.accessToken, forKey: AuthTokenStore.key)
+            AuthTokenStore.save(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken)
             isSignedIn = true
             await loadCurrentUser()
         } catch {
@@ -50,7 +50,7 @@ final class AuthViewModel: ObservableObject {
     }
 
     func signOut() {
-        KeychainHelper.delete(forKey: AuthTokenStore.key)
+        AuthTokenStore.clear()
         isSignedIn = false
         currentUser = nil
     }

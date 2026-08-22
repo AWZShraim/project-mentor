@@ -30,11 +30,35 @@ final class APIClient {
     private let decoder = JSONDecoder()
     private let encoder = JSONEncoder()
 
+    /// Retries once with a refreshed access token on a 401 - access
+    /// tokens expire after 60 minutes and this is the only place that
+    /// needs to know that.
     private func request(
         _ path: String,
         method: String = "GET",
         query: [String: String] = [:],
         body: Data? = nil,
+        accessToken: String
+    ) async throws -> Data {
+        do {
+            return try await performRequest(
+                path, method: method, query: query, body: body, accessToken: accessToken
+            )
+        } catch APIError.server(401) {
+            guard let newToken = await AuthTokenStore.refreshAccessToken() else {
+                throw APIError.server(401)
+            }
+            return try await performRequest(
+                path, method: method, query: query, body: body, accessToken: newToken
+            )
+        }
+    }
+
+    private func performRequest(
+        _ path: String,
+        method: String,
+        query: [String: String],
+        body: Data?,
         accessToken: String
     ) async throws -> Data {
         var components = URLComponents(

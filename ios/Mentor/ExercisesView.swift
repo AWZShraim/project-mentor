@@ -162,6 +162,7 @@ private struct EditableExerciseRow: View {
             HStack {
                 Text(entry.exercise.name).font(.headline)
                 Spacer()
+                unitPicker
                 Button {
                     viewModel.removeEntry(entry)
                 } label: {
@@ -185,6 +186,34 @@ private struct EditableExerciseRow: View {
         .padding(.vertical, 8)
         .onChange(of: entry.sets) { _, _ in
             viewModel.scheduleSave(for: entry)
+        }
+        .onChange(of: entry.weightUnit) { _, _ in
+            viewModel.scheduleSave(for: entry)
+        }
+        .onChange(of: entry.distanceUnit) { _, _ in
+            viewModel.scheduleSave(for: entry)
+        }
+    }
+
+    @ViewBuilder
+    private var unitPicker: some View {
+        switch entry.exercise.loggingType {
+        case "reps_weight":
+            Picker("Unit", selection: $entry.weightUnit) {
+                Text("lbs").tag("lbs")
+                Text("kg").tag("kg")
+            }
+            .pickerStyle(.menu)
+            .font(.caption)
+        case "distance":
+            Picker("Unit", selection: $entry.distanceUnit) {
+                Text("mile").tag("mile")
+                Text("km").tag("km")
+            }
+            .pickerStyle(.menu)
+            .font(.caption)
+        default:
+            EmptyView()
         }
     }
 

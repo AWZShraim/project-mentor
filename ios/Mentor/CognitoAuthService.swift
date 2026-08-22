@@ -81,4 +81,27 @@ final class CognitoAuthService {
 
         return CognitoTokens(accessToken: accessToken, idToken: idToken, refreshToken: refreshToken, expiresIn: expiresIn)
     }
+
+    /// Cognito doesn't return a new refresh token on this flow (no
+    /// rotation configured on our app client) - the caller keeps using
+    /// the same one it already had.
+    func refreshAccessToken(refreshToken: String) async throws -> CognitoTokens {
+        let json = try await request(target: "InitiateAuth", body: [
+            "AuthFlow": "REFRESH_TOKEN_AUTH",
+            "ClientId": clientId,
+            "AuthParameters": ["REFRESH_TOKEN": refreshToken],
+        ])
+
+        guard let result = json["AuthenticationResult"] as? [String: Any],
+              let accessToken = result["AccessToken"] as? String,
+              let idToken = result["IdToken"] as? String,
+              let expiresIn = result["ExpiresIn"] as? Int
+        else {
+            throw CognitoError.invalidResponse
+        }
+
+        return CognitoTokens(
+            accessToken: accessToken, idToken: idToken, refreshToken: refreshToken, expiresIn: expiresIn
+        )
+    }
 }

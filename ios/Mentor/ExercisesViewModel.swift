@@ -10,10 +10,20 @@ final class EditableWorkoutEntry: ObservableObject, Identifiable {
     var serverID: String?
     let exercise: Exercise
     @Published var sets: [SetInputRow]
+    @Published var weightUnit: String
+    @Published var distanceUnit: String
 
-    init(exercise: Exercise, sets: [SetInputRow]? = nil, serverID: String? = nil) {
+    init(
+        exercise: Exercise,
+        sets: [SetInputRow]? = nil,
+        weightUnit: String = "lbs",
+        distanceUnit: String = "mile",
+        serverID: String? = nil
+    ) {
         self.exercise = exercise
         self.sets = sets ?? [SetInputRow(setNumber: 1)]
+        self.weightUnit = weightUnit
+        self.distanceUnit = distanceUnit
         self.serverID = serverID
     }
 }
@@ -42,15 +52,17 @@ final class ExercisesViewModel: ObservableObject {
                         setNumber: set.setNumber,
                         reps: set.reps.map(String.init) ?? "",
                         weight: set.weight.map(formattedNumber) ?? "",
-                        weightUnit: set.weightUnit ?? "kg",
                         durationSeconds: set.durationSeconds.map(String.init) ?? "",
-                        distance: set.distance.map(formattedNumber) ?? "",
-                        distanceUnit: set.distanceUnit ?? "km"
+                        distance: set.distance.map(formattedNumber) ?? ""
                     )
                 }
+                let weightUnit = record.sets.compactMap(\.weightUnit).first ?? "lbs"
+                let distanceUnit = record.sets.compactMap(\.distanceUnit).first ?? "mile"
                 return EditableWorkoutEntry(
                     exercise: record.exercise,
                     sets: rows.isEmpty ? nil : rows,
+                    weightUnit: weightUnit,
+                    distanceUnit: distanceUnit,
                     serverID: record.id
                 )
             }
@@ -95,7 +107,18 @@ final class ExercisesViewModel: ObservableObject {
 
         let validRows = entry.sets.filter { !$0.isBlank }
         guard !validRows.isEmpty else { return }
-        let payloadSets = validRows.map { $0.asPayload() }
+
+        let payloadSets = validRows.map { row in
+            WorkoutSetPayload(
+                setNumber: row.setNumber,
+                reps: Int(row.reps),
+                weight: Double(row.weight),
+                weightUnit: row.weight.isEmpty ? nil : entry.weightUnit,
+                durationSeconds: Int(row.durationSeconds),
+                distance: Double(row.distance),
+                distanceUnit: row.distance.isEmpty ? nil : entry.distanceUnit
+            )
+        }
 
         do {
             if let serverID = entry.serverID {
