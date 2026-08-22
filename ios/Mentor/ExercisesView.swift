@@ -172,8 +172,8 @@ private struct EditableExerciseRow: View {
                 .buttonStyle(.plain)
             }
 
-            ForEach(entry.sets.indices, id: \.self) { index in
-                setRow(index: index)
+            ForEach($entry.sets) { $row in
+                setRow(row: $row)
             }
 
             Button {
@@ -218,50 +218,45 @@ private struct EditableExerciseRow: View {
     }
 
     @ViewBuilder
-    private func setRow(index: Int) -> some View {
-        let binding = Binding<SetInputRow>(
-            get: { entry.sets[index] },
-            set: { newValue in entry.sets[index] = newValue }
-        )
-
+    private func setRow(row: Binding<SetInputRow>) -> some View {
         HStack {
-            Text("Set \(index + 1)")
+            Text("Set \(row.wrappedValue.setNumber)")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .frame(width: 44, alignment: .leading)
 
             switch entry.exercise.loggingType {
             case "reps_weight":
-                TextField("Reps", text: binding.reps)
+                TextField("Reps", text: row.reps)
                     .keyboardType(.numberPad)
                     .textFieldStyle(.roundedBorder)
-                TextField("Weight", text: binding.weight)
+                TextField("Weight", text: row.weight)
                     .keyboardType(.decimalPad)
                     .textFieldStyle(.roundedBorder)
             case "reps_only":
-                TextField("Reps", text: binding.reps)
+                TextField("Reps", text: row.reps)
                     .keyboardType(.numberPad)
                     .textFieldStyle(.roundedBorder)
             case "duration":
-                TextField("Seconds", text: binding.durationSeconds)
+                TextField("Seconds", text: row.durationSeconds)
                     .keyboardType(.numberPad)
                     .textFieldStyle(.roundedBorder)
             case "distance":
-                TextField("Distance", text: binding.distance)
+                TextField("Distance", text: row.distance)
                     .keyboardType(.decimalPad)
                     .textFieldStyle(.roundedBorder)
-                TextField("Seconds", text: binding.durationSeconds)
+                TextField("Seconds", text: row.durationSeconds)
                     .keyboardType(.numberPad)
                     .textFieldStyle(.roundedBorder)
             default:
-                TextField("Reps", text: binding.reps)
+                TextField("Reps", text: row.reps)
                     .keyboardType(.numberPad)
                     .textFieldStyle(.roundedBorder)
             }
 
             if entry.sets.count > 1 {
                 Button {
-                    viewModel.removeSet(at: index, from: entry)
+                    viewModel.removeSet(id: row.wrappedValue.id, from: entry)
                 } label: {
                     Image(systemName: "minus.circle.fill")
                         .foregroundStyle(.red)

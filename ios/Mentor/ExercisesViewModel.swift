@@ -93,12 +93,17 @@ final class ExercisesViewModel: ObservableObject {
 
     /// Keeps at least one set - to fully remove an exercise, use
     /// removeEntry instead so it's unambiguous which action the user meant.
-    func removeSet(at index: Int, from entry: EditableWorkoutEntry) {
-        guard entry.sets.count > 1, entry.sets.indices.contains(index) else { return }
-        entry.sets.remove(at: index)
-        for i in entry.sets.indices {
-            entry.sets[i].setNumber = i + 1
+    /// Identifies the set by its own id (not a positional index) and
+    /// assigns the whole array once, atomically - avoids a stale index
+    /// being evaluated mid-transition by ForEach/Binding.
+    func removeSet(id: UUID, from entry: EditableWorkoutEntry) {
+        guard entry.sets.count > 1 else { return }
+        var updated = entry.sets
+        updated.removeAll { $0.id == id }
+        for i in updated.indices {
+            updated[i].setNumber = i + 1
         }
+        entry.sets = updated
     }
 
     /// Debounces edits so we don't fire a network request per keystroke -
