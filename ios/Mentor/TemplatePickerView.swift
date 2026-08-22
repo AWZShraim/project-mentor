@@ -19,9 +19,9 @@ struct TemplatePickerView: View {
                     Text(message).foregroundStyle(.red).padding()
                 } else if templates.isEmpty {
                     ContentUnavailableView(
-                        "No splits yet",
-                        systemImage: "list.bullet.rectangle",
-                        description: Text("Create one from the Split screen first")
+                        "No days yet",
+                        systemImage: "calendar",
+                        description: Text("Create one from the Days screen first")
                     )
                 } else {
                     List(templates) { template in
@@ -39,7 +39,7 @@ struct TemplatePickerView: View {
                     }
                 }
             }
-            .navigationTitle("Choose a Split")
+            .navigationTitle("Choose a Day")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }

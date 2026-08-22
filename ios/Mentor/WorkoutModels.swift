@@ -88,6 +88,46 @@ struct WorkoutLogEntryRecord: Codable, Identifiable {
     }
 }
 
+struct WorkoutLogUpdatePayload: Codable {
+    let sets: [WorkoutSetPayload]
+}
+
+/// A single set's input fields, editable inline on the Exercises page.
+/// String-backed so TextField bindings are trivial; parsed to numbers
+/// only when saving.
+struct SetInputRow: Identifiable, Equatable {
+    let id = UUID()
+    var setNumber: Int
+    var reps: String = ""
+    var weight: String = ""
+    var weightUnit: String = "kg"
+    var durationSeconds: String = ""
+    var distance: String = ""
+    var distanceUnit: String = "km"
+
+    var isBlank: Bool {
+        reps.isEmpty && weight.isEmpty && durationSeconds.isEmpty && distance.isEmpty
+    }
+
+    func asPayload() -> WorkoutSetPayload {
+        WorkoutSetPayload(
+            setNumber: setNumber,
+            reps: Int(reps),
+            weight: Double(weight),
+            weightUnit: weight.isEmpty ? nil : weightUnit,
+            durationSeconds: Int(durationSeconds),
+            distance: Double(distance),
+            distanceUnit: distance.isEmpty ? nil : distanceUnit
+        )
+    }
+}
+
+func formattedNumber(_ value: Double) -> String {
+    value.truncatingRemainder(dividingBy: 1) == 0
+        ? String(format: "%.0f", value)
+        : String(format: "%.1f", value)
+}
+
 enum DateFormatting {
     static let dateOnly: DateFormatter = {
         let f = DateFormatter()

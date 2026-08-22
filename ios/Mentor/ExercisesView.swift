@@ -2,42 +2,37 @@ import SwiftUI
 
 struct ExercisesView: View {
     @StateObject private var viewModel = ExercisesViewModel()
-    @State private var showingLogSheet = false
-    @State private var showingAddExerciseSheet = false
-    @State private var showingTemplatesSheet = false
+    @State private var showingDayPicker = false
+    @State private var showingExercisePicker = false
+    @State private var showingManageDays = false
     @State private var showingDatePicker = false
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                dateHeader
-                Divider()
-                content
+            ZStack(alignment: .bottomTrailing) {
+                VStack(spacing: 0) {
+                    dateHeader
+                    Divider()
+                    content
+                }
+
+                manageDaysButton
+                    .padding()
             }
             .navigationTitle("Exercises")
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Split") { showingTemplatesSheet = true }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showingLogSheet = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
+            .sheet(isPresented: $showingDayPicker) {
+                TemplatePickerView { exercises in
+                    viewModel.addExercises(exercises)
+                    showingDayPicker = false
                 }
             }
-            .sheet(isPresented: $showingLogSheet, onDismiss: {
-                Task { await viewModel.loadLogs() }
-            }) {
-                LogWorkoutEntryView(date: viewModel.selectedDate)
+            .sheet(isPresented: $showingExercisePicker) {
+                ExercisePickerView { exercises in
+                    viewModel.addExercises(exercises)
+                    showingExercisePicker = false
+                }
             }
-            .sheet(isPresented: $showingAddExerciseSheet, onDismiss: {
-                Task { await viewModel.loadLogs() }
-            }) {
-                AddExerciseFlowView(date: viewModel.selectedDate)
-            }
-            .sheet(isPresented: $showingTemplatesSheet) {
+            .sheet(isPresented: $showingManageDays) {
                 WorkoutTemplatesView()
             }
             .sheet(isPresented: $showingDatePicker) {
@@ -54,7 +49,7 @@ struct ExercisesView: View {
                         ToolbarItem(placement: .confirmationAction) {
                             Button("Done") {
                                 showingDatePicker = false
-                                Task { await viewModel.loadLogs() }
+                                Task { await viewModel.loadEntries() }
                             }
                         }
                     }
@@ -62,8 +57,22 @@ struct ExercisesView: View {
                 .presentationDetents([.medium])
             }
             .task {
-                await viewModel.loadLogs()
+                await viewModel.loadEntries()
             }
+        }
+    }
+
+    private var manageDaysButton: some View {
+        Button {
+            showingManageDays = true
+        } label: {
+            Image(systemName: "calendar")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 52, height: 52)
+                .background(Color.accentColor)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .shadow(radius: 4)
         }
     }
 
@@ -77,28 +86,41 @@ struct ExercisesView: View {
             Spacer()
             Text(message).foregroundStyle(.red).font(.footnote).padding()
             Spacer()
-        } else if viewModel.logsForSelectedDate.isEmpty {
-            Spacer()
-            VStack(spacing: 12) {
-                Image(systemName: "dumbbell")
-                    .font(.system(size: 40))
-                    .foregroundStyle(.secondary)
-                Text("Nothing logged for this day")
-                    .foregroundStyle(.secondary)
-                Button {
-                    showingAddExerciseSheet = true
-                } label: {
-                    Label("Add Exercise", systemImage: "plus")
-                }
-                .buttonStyle(.borderedProminent)
-            }
-            Spacer()
         } else {
-            List(viewModel.logsForSelectedDate) { log in
-                WorkoutLogRow(log: log)
+            List {
+                ForEach(viewModel.entries) { entry in
+                    EditableExerciseRow(entry: entry, viewModel: viewModel)
+                }
+
+                Section {
+                    actionButtons
+                }
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
             }
             .listStyle(.plain)
         }
+    }
+
+    private var actionButtons: some View {
+        VStack(spacing: 12) {
+            Button {
+                showingDayPicker = true
+            } label: {
+                Label("Add Day", systemImage: "calendar")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+
+            Button {
+                showingExercisePicker = true
+            } label: {
+                Label("Add Exercise", systemImage: "plus")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+        }
+        .padding(.vertical, 8)
     }
 
     private var dateHeader: some View {
@@ -131,58 +153,81 @@ struct ExercisesView: View {
     }
 }
 
-struct WorkoutLogRow: View {
-    let log: WorkoutLogEntryRecord
+private struct EditableExerciseRow: View {
+    @ObservedObject var entry: EditableWorkoutEntry
+    let viewModel: ExercisesViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(log.exercise.name).font(.headline)
-            ForEach(log.sets) { set in
-                Text(setSummary(set))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(entry.exercise.name).font(.headline)
+                Spacer()
+                Button {
+                    viewModel.removeEntry(entry)
+                } label: {
+                    Image(systemName: "trash")
+                        .foregroundStyle(.red)
+                }
+                .buttonStyle(.plain)
+            }
+
+            ForEach(entry.sets.indices, id: \.self) { index in
+                setRow(index: index)
+            }
+
+            Button {
+                viewModel.addSet(to: entry)
+            } label: {
+                Label("Add Set", systemImage: "plus")
+                    .font(.caption)
             }
         }
-        .padding(.vertical, 4)
-    }
-
-    private func setSummary(_ set: WorkoutSetRecord) -> String {
-        switch log.exercise.loggingType {
-        case "reps_weight":
-            let weight = set.weight.map { "\(formatted($0)) \(set.weightUnit ?? "kg")" } ?? "-"
-            return "Set \(set.setNumber): \(set.reps ?? 0) reps @ \(weight)"
-        case "reps_only":
-            return "Set \(set.setNumber): \(set.reps ?? 0) reps"
-        case "duration":
-            return "Set \(set.setNumber): \(set.durationSeconds ?? 0)s"
-        case "distance":
-            let distance = set.distance.map { "\(formatted($0)) \(set.distanceUnit ?? "km")" } ?? "-"
-            let duration = set.durationSeconds.map { " in \($0)s" } ?? ""
-            return "Set \(set.setNumber): \(distance)\(duration)"
-        default:
-            return "Set \(set.setNumber)"
+        .padding(.vertical, 8)
+        .onChange(of: entry.sets) { _, _ in
+            viewModel.scheduleSave(for: entry)
         }
     }
 
-    private func formatted(_ value: Double) -> String {
-        value.truncatingRemainder(dividingBy: 1) == 0
-            ? String(format: "%.0f", value)
-            : String(format: "%.1f", value)
-    }
-}
+    @ViewBuilder
+    private func setRow(index: Int) -> some View {
+        let binding = Binding<SetInputRow>(
+            get: { entry.sets[index] },
+            set: { newValue in entry.sets[index] = newValue }
+        )
 
-/// Logging individual exercises directly, without going through a saved
-/// split - reached from the empty state's "Add Exercise" button.
-struct AddExerciseFlowView: View {
-    let date: Date
-    @State private var selectedExercises: [Exercise]?
+        HStack {
+            Text("Set \(index + 1)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .frame(width: 44, alignment: .leading)
 
-    var body: some View {
-        if let exercises = selectedExercises {
-            WorkoutSetsFormView(date: date, exercises: exercises)
-        } else {
-            ExercisePickerView { exercises in
-                selectedExercises = exercises
+            switch entry.exercise.loggingType {
+            case "reps_weight":
+                TextField("Reps", text: binding.reps)
+                    .keyboardType(.numberPad)
+                    .textFieldStyle(.roundedBorder)
+                TextField("Weight", text: binding.weight)
+                    .keyboardType(.decimalPad)
+                    .textFieldStyle(.roundedBorder)
+            case "reps_only":
+                TextField("Reps", text: binding.reps)
+                    .keyboardType(.numberPad)
+                    .textFieldStyle(.roundedBorder)
+            case "duration":
+                TextField("Seconds", text: binding.durationSeconds)
+                    .keyboardType(.numberPad)
+                    .textFieldStyle(.roundedBorder)
+            case "distance":
+                TextField("Distance", text: binding.distance)
+                    .keyboardType(.decimalPad)
+                    .textFieldStyle(.roundedBorder)
+                TextField("Seconds", text: binding.durationSeconds)
+                    .keyboardType(.numberPad)
+                    .textFieldStyle(.roundedBorder)
+            default:
+                TextField("Reps", text: binding.reps)
+                    .keyboardType(.numberPad)
+                    .textFieldStyle(.roundedBorder)
             }
         }
     }

@@ -14,14 +14,6 @@ struct WorkoutTemplatesView: View {
             Group {
                 if isLoading {
                     ProgressView()
-                } else if let message = errorMessage {
-                    Text(message).foregroundStyle(.red).padding()
-                } else if templates.isEmpty {
-                    ContentUnavailableView(
-                        "No splits yet",
-                        systemImage: "list.bullet.rectangle",
-                        description: Text("Create a split to save a reusable exercise list")
-                    )
                 } else {
                     List {
                         ForEach(templates) { template in
@@ -36,20 +28,28 @@ struct WorkoutTemplatesView: View {
                         .onDelete { offsets in
                             Task { await delete(at: offsets) }
                         }
+
+                        Section {
+                            Button {
+                                showingCreateSheet = true
+                            } label: {
+                                Label("Create Day", systemImage: "plus")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
+                        .listRowSeparator(.hidden)
+
+                        if let message = errorMessage {
+                            Text(message).foregroundStyle(.red).font(.footnote)
+                        }
                     }
                 }
             }
-            .navigationTitle("Split")
+            .navigationTitle("Days")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Close") { dismiss() }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showingCreateSheet = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
                 }
             }
             .sheet(isPresented: $showingCreateSheet, onDismiss: {
@@ -91,8 +91,10 @@ struct WorkoutTemplatesView: View {
 struct CreateWorkoutTemplateView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
+    @State private var allExercises: [Exercise] = []
     @State private var selectedExercises: [Exercise] = []
-    @State private var showingExercisePicker = false
+    @State private var searchText = ""
+    @State private var isLoadingExercises = true
     @State private var isSaving = false
     @State private var errorMessage: String?
 
@@ -100,19 +102,39 @@ struct CreateWorkoutTemplateView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Name") {
-                    TextField("e.g. Push Day", text: $name)
+            List {
+                Section {
+                    TextField("Day name (e.g. Push Day)", text: $name)
+                }
+
+                if !selectedExercises.isEmpty {
+                    Section("Selected Exercises") {
+                        ForEach(selectedExercises) { exercise in
+                            Button {
+                                deselect(exercise)
+                            } label: {
+                                HStack {
+                                    Text(exercise.name)
+                                        .foregroundStyle(.primary)
+                                    Spacer()
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(.tint)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
                 }
 
                 Section("Exercises") {
-                    ForEach(selectedExercises) { exercise in
-                        Text(exercise.name)
-                    }
-                    Button {
-                        showingExercisePicker = true
-                    } label: {
-                        Label("Add Exercises", systemImage: "plus")
+                    ForEach(availableExercises) { exercise in
+                        Button {
+                            select(exercise)
+                        } label: {
+                            Text(exercise.name)
+                                .foregroundStyle(.primary)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
 
@@ -120,24 +142,53 @@ struct CreateWorkoutTemplateView: View {
                     Text(message).foregroundStyle(.red).font(.footnote)
                 }
             }
-            .navigationTitle("New Split")
+            .searchable(text: $searchText, prompt: "Search exercises")
+            .navigationTitle("New Day")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button("Create") {
                         Task { await save() }
                     }
                     .disabled(name.isEmpty || selectedExercises.isEmpty || isSaving)
                 }
             }
-            .sheet(isPresented: $showingExercisePicker) {
-                ExercisePickerView { exercises in
-                    selectedExercises = exercises
-                    showingExercisePicker = false
+            .overlay {
+                if isLoadingExercises {
+                    ProgressView()
                 }
             }
+            .task {
+                await loadExercises()
+            }
+        }
+    }
+
+    private var availableExercises: [Exercise] {
+        let selectedIDs = Set(selectedExercises.map(\.id))
+        let remaining = allExercises.filter { !selectedIDs.contains($0.id) }
+        guard !searchText.isEmpty else { return remaining }
+        return remaining.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    }
+
+    private func select(_ exercise: Exercise) {
+        selectedExercises.append(exercise)
+    }
+
+    private func deselect(_ exercise: Exercise) {
+        selectedExercises.removeAll { $0.id == exercise.id }
+    }
+
+    private func loadExercises() async {
+        guard let token = AuthTokenStore.current else { return }
+        isLoadingExercises = true
+        defer { isLoadingExercises = false }
+        do {
+            allExercises = try await api.listExercises(accessToken: token)
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 

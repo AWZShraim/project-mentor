@@ -111,4 +111,22 @@ final class APIClient {
         )
         return try decoder.decode(WorkoutLogEntryRecord.self, from: data)
     }
+
+    func updateWorkoutLog(
+        id: String,
+        sets: [WorkoutSetPayload],
+        accessToken: String
+    ) async throws -> WorkoutLogEntryRecord {
+        let body = try encoder.encode(WorkoutLogUpdatePayload(sets: sets))
+        let data = try await request(
+            "workout-logs/\(id)", method: "PATCH", body: body, accessToken: accessToken
+        )
+        return try decoder.decode(WorkoutLogEntryRecord.self, from: data)
+    }
+
+    func deleteWorkoutLog(id: String, accessToken: String) async throws {
+        _ = try await request(
+            "workout-logs/\(id)", method: "DELETE", accessToken: accessToken
+        )
+    }
 }
