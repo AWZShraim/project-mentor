@@ -82,8 +82,15 @@ class Exercise(Base):
     id: Mapped[uuid.UUID] = _uuid_pk()
     user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
     name: Mapped[str] = mapped_column(String, nullable=False)
+    category: Mapped[str | None] = mapped_column(String)
+    # strength, cardio, mobility, plyometric
     muscle_groups: Mapped[list[str] | None] = mapped_column(ARRAY(String))
     equipment: Mapped[str | None] = mapped_column(String)
+    movement_pattern: Mapped[str | None] = mapped_column(String)
+    # push, pull, squat, hinge, lunge, carry, rotation, isometric
+    logging_type: Mapped[str | None] = mapped_column(String)
+    # reps_weight, reps_only, duration, distance - which input fields the
+    # logging UI should show for this exercise
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
 
