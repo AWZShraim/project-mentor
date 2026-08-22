@@ -110,6 +110,10 @@ class WorkoutLogCreate(BaseModel):
     sets: list[WorkoutSetIn]
 
 
+class WorkoutLogUpdate(BaseModel):
+    sets: list[WorkoutSetIn]
+
+
 class WorkoutLogOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

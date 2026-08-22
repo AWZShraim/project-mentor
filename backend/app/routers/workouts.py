@@ -135,3 +135,39 @@ def create_workout_log(
     db.commit()
     db.refresh(entry)
     return entry
+
+
+@router.patch("/workout-logs/{log_id}", response_model=schemas.WorkoutLogOut)
+def update_workout_log(
+    log_id: uuid.UUID,
+    payload: schemas.WorkoutLogUpdate,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    entry = db.get(models.WorkoutLogEntry, log_id)
+    if entry is None or entry.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Workout log not found")
+
+    db.query(models.WorkoutSet).filter(
+        models.WorkoutSet.workout_log_entry_id == entry.id
+    ).delete()
+
+    for s in payload.sets:
+        db.add(models.WorkoutSet(workout_log_entry_id=entry.id, **s.model_dump()))
+
+    db.commit()
+    db.refresh(entry)
+    return entry
+
+
+@router.delete("/workout-logs/{log_id}", status_code=204)
+def delete_workout_log(
+    log_id: uuid.UUID,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    entry = db.get(models.WorkoutLogEntry, log_id)
+    if entry is None or entry.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Workout log not found")
+    db.delete(entry)
+    db.commit()
