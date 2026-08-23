@@ -46,6 +46,7 @@ private struct OpenFoodFactsSearchView: View {
     @State private var isSearching = false
     @State private var errorMessage: String?
     @State private var selectedProduct: OpenFoodFactsProduct?
+    @State private var searchTask: Task<Void, Never>?
 
     private let offService = OpenFoodFactsService()
 
@@ -54,29 +55,38 @@ private struct OpenFoodFactsSearchView: View {
             HStack {
                 TextField("Search foods", text: $searchText)
                     .textFieldStyle(.themed)
-                    .onSubmit { Task { await search() } }
-                Button("Search") { Task { await search() } }
-                    .tint(Theme.purple)
-                    .disabled(searchText.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .onChange(of: searchText) { _, newValue in
+                        scheduleSearch(for: newValue)
+                    }
+                if isSearching {
+                    ProgressView().tint(Theme.purple)
+                }
             }
             .padding(.horizontal)
             .padding(.bottom, 8)
 
-            if isSearching {
-                Spacer()
-                ProgressView().tint(Theme.purple)
-                Spacer()
-            } else if let message = errorMessage {
+            if let message = errorMessage {
                 Spacer()
                 Text(message).foregroundStyle(Theme.danger).font(.footnote).padding()
                 Spacer()
-            } else if results.isEmpty {
+            } else if searchText.trimmingCharacters(in: .whitespaces).isEmpty {
                 Spacer()
                 Text("Search Open Food Facts for packaged foods")
                     .foregroundStyle(Theme.textSecondary)
                     .font(.footnote)
                     .multilineTextAlignment(.center)
                     .padding()
+                Spacer()
+            } else if results.isEmpty {
+                Spacer()
+                if isSearching {
+                    ProgressView().tint(Theme.purple)
+                } else {
+                    Text("No results for \u{201C}\(searchText)\u{201D}")
+                        .foregroundStyle(Theme.textSecondary)
+                        .font(.footnote)
+                        .padding()
+                }
                 Spacer()
             } else {
                 ScrollView {
@@ -114,18 +124,38 @@ private struct OpenFoodFactsSearchView: View {
         }
     }
 
-    private func search() async {
-        let term = searchText.trimmingCharacters(in: .whitespaces)
-        guard !term.isEmpty else { return }
+    /// Debounces as-you-type search: cancels any pending search and
+    /// reschedules, so a fast typer doesn't fire a network request per
+    /// keystroke. Empties results immediately on an empty query rather
+    /// than waiting out the debounce.
+    private func scheduleSearch(for term: String) {
+        searchTask?.cancel()
+        let trimmed = term.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else {
+            results = []
+            errorMessage = nil
+            isSearching = false
+            return
+        }
+        searchTask = Task {
+            try? await Task.sleep(nanoseconds: 350_000_000)
+            guard !Task.isCancelled else { return }
+            await search(term: trimmed)
+        }
+    }
+
+    private func search(term: String) async {
         isSearching = true
         errorMessage = nil
         defer { isSearching = false }
         do {
             let found = try await offService.search(term: term)
+            guard !Task.isCancelled else { return }
             results = found.sorted {
                 relevanceRank($0.name, matching: term) < relevanceRank($1.name, matching: term)
             }
         } catch {
+            guard !Task.isCancelled else { return }
             errorMessage = error.localizedDescription
         }
     }
