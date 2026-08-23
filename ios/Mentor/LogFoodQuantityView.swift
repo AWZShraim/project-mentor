@@ -66,6 +66,7 @@ struct LogFoodQuantityView: View {
             .padding(16)
             .background(Theme.background)
             .navigationTitle("Log Food")
+            .darkNavBar()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }

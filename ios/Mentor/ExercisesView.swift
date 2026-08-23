@@ -11,6 +11,7 @@ struct ExercisesView: View {
         NavigationStack {
             ZStack(alignment: .bottomTrailing) {
                 VStack(spacing: 0) {
+                    ScreenTitle(title: "Exercises")
                     dateHeader
                     Divider().overlay(Theme.border)
                     content
@@ -20,7 +21,7 @@ struct ExercisesView: View {
                 manageDaysButton
                     .padding()
             }
-            .navigationTitle("Exercises")
+            .hiddenNavBar()
             .sheet(isPresented: $showingDayPicker) {
                 TemplatePickerView { exercises in
                     viewModel.addExercises(exercises)
@@ -48,6 +49,7 @@ struct ExercisesView: View {
                     .padding()
                     .background(Theme.background)
                     .navigationTitle("Select Date")
+                    .darkNavBar()
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
                             Button("Done") {

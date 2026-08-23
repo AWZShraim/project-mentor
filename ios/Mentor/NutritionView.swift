@@ -9,12 +9,13 @@ struct NutritionView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+                ScreenTitle(title: "Nutrition")
                 dateHeader
                 Divider().overlay(Theme.border)
                 content
             }
             .background(Theme.background)
-            .navigationTitle("Nutrition")
+            .hiddenNavBar()
             .sheet(isPresented: Binding(
                 get: { addingMealType != nil },
                 set: { if !$0 { addingMealType = nil } }
@@ -37,6 +38,7 @@ struct NutritionView: View {
                     .padding()
                     .background(Theme.background)
                     .navigationTitle("Select Date")
+                    .darkNavBar()
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
                             Button("Done") {

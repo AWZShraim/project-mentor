@@ -53,6 +53,7 @@ struct TemplatePickerView: View {
             }
             .background(Theme.background)
             .navigationTitle("Choose a Day")
+            .darkNavBar()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }

@@ -31,6 +31,7 @@ struct ExercisePickerView: View {
             .background(Theme.background)
             .searchable(text: $searchText, prompt: "Search exercises")
             .navigationTitle("Choose Exercises")
+            .darkNavBar()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }

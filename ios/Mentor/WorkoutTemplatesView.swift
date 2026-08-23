@@ -59,6 +59,7 @@ struct WorkoutTemplatesView: View {
             }
             .background(Theme.background)
             .navigationTitle("Days")
+            .darkNavBar()
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Close") { dismiss() }
@@ -188,6 +189,7 @@ struct CreateWorkoutTemplateView: View {
             .background(Theme.background)
             .searchable(text: $searchText, prompt: "Search exercises")
             .navigationTitle(existingTemplate == nil ? "New Day" : "Edit Day")
+            .darkNavBar()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }

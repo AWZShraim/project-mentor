@@ -72,6 +72,7 @@ struct CreateFoodItemView: View {
             }
             .background(Theme.background)
             .navigationTitle("New Food")
+            .darkNavBar()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }

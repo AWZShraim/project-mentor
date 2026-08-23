@@ -138,6 +138,40 @@ struct MacroChip: View {
     }
 }
 
+// MARK: - Screen title (replaces the native nav bar title - we hide the
+// system navigation bar on the main tabs entirely so the app doesn't
+// read as a stock iOS list-of-screens app)
+
+struct ScreenTitle: View {
+    let title: String
+
+    var body: some View {
+        Text(title)
+            .font(.system(size: 26, weight: .bold))
+            .foregroundStyle(Theme.textPrimary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 4)
+    }
+}
+
+extension View {
+    /// Hides the native nav bar and themes anything that still needs one
+    /// (sheets keep their Cancel/Done bar, but dark instead of the
+    /// default light material).
+    func hiddenNavBar() -> some View {
+        self.toolbar(.hidden, for: .navigationBar)
+    }
+
+    func darkNavBar() -> some View {
+        self
+            .toolbarBackground(Theme.background, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
+    }
+}
+
 // MARK: - Section header (bypasses the default all-caps system style)
 
 struct SectionHeader: View {
