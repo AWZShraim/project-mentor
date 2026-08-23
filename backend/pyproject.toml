@@ -13,6 +13,7 @@ dependencies = [
     "python-jose[cryptography]>=3.3",
     "httpx>=0.27",
     "boto3>=1.34",
+    "anthropic>=0.40",
 ]
 
 [build-system]

@@ -2,13 +2,14 @@ from fastapi import Depends, FastAPI
 
 from app import models, schemas
 from app.auth import get_current_user
-from app.routers import exercises, nutrition, workouts
+from app.routers import coach, exercises, nutrition, workouts
 
 app = FastAPI(title="Mentor API")
 
 app.include_router(nutrition.router)
 app.include_router(exercises.router)
 app.include_router(workouts.router)
+app.include_router(coach.router)
 
 
 @app.get("/health")

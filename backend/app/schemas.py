@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
@@ -133,3 +134,84 @@ class WorkoutLogOut(BaseModel):
     notes: str | None
     sets: list[WorkoutSetOut]
     created_at: datetime
+
+
+class GoalOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    goal_type: str
+    value: dict[str, Any]
+    status: str
+    reasoning: str | None
+    created_by: str
+    effective_at: datetime | None
+    created_at: datetime
+
+
+class CoachCheckInResult(BaseModel):
+    proposal: GoalOut | None
+    message: str
+
+
+class HealthMetricCreate(BaseModel):
+    metric_type: str
+    value: float
+    unit: str
+    recorded_at: datetime
+
+
+class HealthMetricOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    metric_type: str
+    value: float
+    unit: str
+    recorded_at: datetime
+    source: str
+
+
+class ChatMessageOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    role: str
+    content: str
+    created_at: datetime
+
+
+class ChatRequest(BaseModel):
+    message: str
+
+
+class AgentActionOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    action_type: str
+    payload: dict[str, Any]
+    summary: str
+    reasoning: str | None
+    status: str
+    created_at: datetime
+    executed_at: datetime | None
+
+
+class ChatResponse(BaseModel):
+    reply: str
+    proposed_goal: GoalOut | None = None
+    proposed_action: AgentActionOut | None = None
+
+
+class DashboardOut(BaseModel):
+    today_calories: float
+    today_protein_g: float
+    today_carbs_g: float
+    today_fat_g: float
+    active_goal: GoalOut | None
+    latest_weight: HealthMetricOut | None
+    weight_change_7d: float | None
+    sleep_hours_last_night: float | None
+    insight_text: str | None
+    insight_generated_at: datetime | None

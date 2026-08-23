@@ -25,8 +25,8 @@ struct MainTabView: View {
     @ViewBuilder
     private func tabContent(_ tab: MentorTab) -> some View {
         switch tab {
-        case .coach:
-            CoachView()
+        case .mentor:
+            MentorView()
         case .nutrition:
             NutritionView()
         case .exercises:
@@ -38,11 +38,11 @@ struct MainTabView: View {
 }
 
 enum MentorTab: CaseIterable {
-    case coach, nutrition, exercises, settings
+    case mentor, nutrition, exercises, settings
 
     var icon: String {
         switch self {
-        case .coach: return "sparkles"
+        case .mentor: return "sparkles"
         case .nutrition: return "fork.knife"
         case .exercises: return "dumbbell.fill"
         case .settings: return "gearshape.fill"
@@ -51,7 +51,7 @@ enum MentorTab: CaseIterable {
 
     var label: String {
         switch self {
-        case .coach: return "Coach"
+        case .mentor: return "Mentor"
         case .nutrition: return "Nutrition"
         case .exercises: return "Exercises"
         case .settings: return "Settings"

@@ -224,4 +224,76 @@ final class APIClient {
             "nutrition-logs/\(id)", method: "DELETE", accessToken: accessToken
         )
     }
+
+    func coachCheckIn(accessToken: String) async throws -> CoachCheckInResult {
+        let data = try await request("coach/check-in", method: "POST", accessToken: accessToken)
+        return try decoder.decode(CoachCheckInResult.self, from: data)
+    }
+
+    func listGoals(accessToken: String) async throws -> [GoalRecord] {
+        let data = try await request("goals", accessToken: accessToken)
+        return try decoder.decode([GoalRecord].self, from: data)
+    }
+
+    func approveGoal(id: String, accessToken: String) async throws -> GoalRecord {
+        let data = try await request(
+            "goals/\(id)/approve", method: "POST", accessToken: accessToken
+        )
+        return try decoder.decode(GoalRecord.self, from: data)
+    }
+
+    func rejectGoal(id: String, accessToken: String) async throws -> GoalRecord {
+        let data = try await request(
+            "goals/\(id)/reject", method: "POST", accessToken: accessToken
+        )
+        return try decoder.decode(GoalRecord.self, from: data)
+    }
+
+    func logHealthMetric(
+        _ payload: HealthMetricCreatePayload,
+        accessToken: String
+    ) async throws -> HealthMetricRecord {
+        let body = try encoder.encode(payload)
+        let data = try await request(
+            "health-metrics", method: "POST", body: body, accessToken: accessToken
+        )
+        return try decoder.decode(HealthMetricRecord.self, from: data)
+    }
+
+    func mentorDashboard(accessToken: String) async throws -> DashboardRecord {
+        let data = try await request("mentor/dashboard", accessToken: accessToken)
+        return try decoder.decode(DashboardRecord.self, from: data)
+    }
+
+    func listMentorMessages(accessToken: String) async throws -> [ChatMessageRecord] {
+        let data = try await request("mentor/messages", accessToken: accessToken)
+        return try decoder.decode([ChatMessageRecord].self, from: data)
+    }
+
+    func sendMentorChat(message: String, accessToken: String) async throws -> ChatResponsePayload {
+        let body = try JSONSerialization.data(withJSONObject: ["message": message])
+        let data = try await request(
+            "mentor/chat", method: "POST", body: body, accessToken: accessToken
+        )
+        return try decoder.decode(ChatResponsePayload.self, from: data)
+    }
+
+    func listAgentActions(accessToken: String) async throws -> [AgentActionRecord] {
+        let data = try await request("mentor/actions", accessToken: accessToken)
+        return try decoder.decode([AgentActionRecord].self, from: data)
+    }
+
+    func approveAgentAction(id: String, accessToken: String) async throws -> AgentActionRecord {
+        let data = try await request(
+            "mentor/actions/\(id)/approve", method: "POST", accessToken: accessToken
+        )
+        return try decoder.decode(AgentActionRecord.self, from: data)
+    }
+
+    func rejectAgentAction(id: String, accessToken: String) async throws -> AgentActionRecord {
+        let data = try await request(
+            "mentor/actions/\(id)/reject", method: "POST", accessToken: accessToken
+        )
+        return try decoder.decode(AgentActionRecord.self, from: data)
+    }
 }

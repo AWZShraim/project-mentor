@@ -49,6 +49,18 @@ aws cognito-idp initiate-auth --auth-flow USER_PASSWORD_AUTH --client-id <client
   --auth-parameters USERNAME=<email>,PASSWORD='<password>'
 ```
 
+## AI coach
+
+`POST /coach/check-in` runs the nutrition coach on-demand: it gathers the user's recent nutrition/workout data, asks Claude (direct Anthropic API) for a calorie/macro assessment, clamps the result against hard-coded safety guardrails (see `app/coach.py`), and writes a `Goal` with `status="proposed"` for the user to approve or reject — nothing takes effect automatically. Every run is also logged to `coach_runs` with its full input context and the model's raw response, for auditability.
+
+Requires an Anthropic API key (create one at [console.anthropic.com](https://console.anthropic.com)):
+
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+Without it, `/coach/check-in` returns `503`.
+
 ## Run locally
 
 ```bash

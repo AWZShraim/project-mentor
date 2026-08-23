@@ -205,3 +205,80 @@ class Goal(Base):
     # user, ai
     effective_at: Mapped[datetime | None]
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+
+class CoachRun(Base):
+    """One invocation of the AI coach pipeline - the harness/observability
+    trail. Keeps the exact context sent to the model and its raw response
+    alongside the resulting goal (if any), so a proposal can always be
+    traced back to why the model made it, independent of what ended up
+    in `goals`.
+    """
+
+    __tablename__ = "coach_runs"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
+    context: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    raw_response: Mapped[str] = mapped_column(Text, nullable=False)
+    model: Mapped[str] = mapped_column(String, nullable=False)
+    resulting_goal_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("goals.id"))
+    guardrail_notes: Mapped[str | None] = mapped_column(Text)
+    # set when the model's proposal was clamped or rejected by the
+    # guardrail checks, explaining what and why
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+    resulting_goal: Mapped["Goal | None"] = relationship()
+
+
+class ChatMessage(Base):
+    """One turn of the Mentor chat, in either direction. Persisted so the
+    conversation survives closing and reopening the app.
+    """
+
+    __tablename__ = "mentor_messages"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
+    role: Mapped[str] = mapped_column(String, nullable=False)
+    # user, assistant
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+
+class AgentAction(Base):
+    """A concrete, executable action (e.g. logging a food entry) that the
+    Mentor chat proposed on the user's behalf while responding to a
+    message. Nothing executes until approved - the same human-in-the-loop
+    rule as `Goal`, just for one-off actions instead of standing targets.
+    """
+
+    __tablename__ = "agent_actions"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
+    action_type: Mapped[str] = mapped_column(String, nullable=False)
+    # log_nutrition_entry
+    payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    summary: Mapped[str] = mapped_column(Text, nullable=False)
+    reasoning: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String, nullable=False, default="proposed")
+    # proposed, approved, rejected, executed, failed
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    executed_at: Mapped[datetime | None]
+
+
+class MentorInsight(Base):
+    """One headline-insight check for the dashboard. A fresh row is written
+    every time the coach evaluates whether the text needs to change - gated
+    on whether user data has changed since the last check, so the model
+    isn't called on every page load - and the previous text carries forward
+    unchanged when nothing's noteworthy yet.
+    """
+
+    __tablename__ = "mentor_insights"
+
+    id: Mapped[uuid.UUID] = _uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
