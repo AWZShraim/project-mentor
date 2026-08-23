@@ -3,23 +3,29 @@ import SwiftUI
 // MARK: - Card surface
 
 struct CardBackground: ViewModifier {
-    var padding: CGFloat = 14
+    var padding: CGFloat = 16
+    var cornerRadius: CGFloat = 18
+    /// Hero cards (e.g. the daily totals readout) get an ambient purple
+    /// bloom instead of a plain drop shadow, so they read as "lit up"
+    /// rather than just elevated.
+    var glow: Bool = false
 
     func body(content: Content) -> some View {
         content
             .padding(padding)
             .background(Theme.surface)
             .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(Theme.border, lineWidth: 1)
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(glow ? Theme.purple.opacity(0.4) : Theme.border, lineWidth: 1)
             )
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            .shadow(color: glow ? Theme.purple.opacity(0.22) : Color.black.opacity(0.3), radius: glow ? 22 : 12, y: 6)
     }
 }
 
 extension View {
-    func cardStyle(padding: CGFloat = 14) -> some View {
-        modifier(CardBackground(padding: padding))
+    func cardStyle(padding: CGFloat = 16, cornerRadius: CGFloat = 18, glow: Bool = false) -> some View {
+        modifier(CardBackground(padding: padding, cornerRadius: cornerRadius, glow: glow))
     }
 }
 
@@ -98,7 +104,7 @@ struct StatBlock: View {
     var body: some View {
         VStack(spacing: 6) {
             Text(value)
-                .font(.stat(30))
+                .font(.stat(36))
                 .foregroundStyle(Theme.purple)
                 .neonGlow(Theme.purple)
             Text(label)
@@ -109,7 +115,7 @@ struct StatBlock: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
-        .cardStyle()
+        .cardStyle(glow: true)
     }
 }
 
@@ -118,23 +124,24 @@ struct MacroChip: View {
     let value: String
 
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: 4) {
             Text(value)
-                .font(.stat(13))
+                .font(.stat(16))
                 .foregroundStyle(Theme.blue)
             Text(label)
-                .font(.system(size: 9, weight: .medium))
+                .font(.system(size: 10, weight: .medium))
                 .textCase(.uppercase)
+                .tracking(0.3)
                 .foregroundStyle(Theme.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
+        .padding(.vertical, 10)
         .background(Theme.blueBg)
         .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Theme.blue.opacity(0.35), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Theme.blue.opacity(0.4), lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 

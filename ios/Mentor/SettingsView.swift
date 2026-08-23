@@ -32,6 +32,7 @@ struct SettingsView: View {
                     }
                     .padding(16)
                 }
+                .tabBarSafeArea()
             }
             .background(Theme.background)
             .hiddenNavBar()

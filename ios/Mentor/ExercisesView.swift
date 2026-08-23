@@ -19,7 +19,8 @@ struct ExercisesView: View {
                 .background(Theme.background)
 
                 manageDaysButton
-                    .padding()
+                    .padding(.trailing, 16)
+                    .padding(.bottom, 96)
             }
             .hiddenNavBar()
             .sheet(isPresented: $showingDayPicker) {
@@ -101,8 +102,8 @@ struct ExercisesView: View {
                     actionButtons
                 }
                 .padding(16)
-                .padding(.bottom, 60)
             }
+            .tabBarSafeArea()
         }
     }
 

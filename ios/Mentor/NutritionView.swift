@@ -77,16 +77,17 @@ struct NutritionView: View {
                 }
                 .padding(16)
             }
+            .tabBarSafeArea()
         }
     }
 
     private var dailyTotalsCard: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 16) {
             VStack(spacing: 4) {
                 Text("\(Int(viewModel.totalCalories))")
-                    .font(.stat(32))
+                    .font(.stat(40))
                     .foregroundStyle(Theme.purple)
-                    .shadow(color: Theme.purple.opacity(0.5), radius: 10)
+                    .neonGlow(Theme.purple, radius: 20)
                 Text("kcal today")
                     .font(.system(size: 11, weight: .medium))
                     .textCase(.uppercase)
@@ -101,8 +102,8 @@ struct NutritionView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 18)
-        .cardStyle()
+        .padding(.vertical, 20)
+        .cardStyle(glow: true)
     }
 
     private func mealCard(_ mealType: String) -> some View {
