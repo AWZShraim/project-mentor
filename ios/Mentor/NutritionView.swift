@@ -10,7 +10,7 @@ struct NutritionView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 dateHeader
-                Divider()
+                Divider().overlay(Theme.border)
                 content
             }
             .background(Theme.background)
@@ -33,7 +33,9 @@ struct NutritionView: View {
                         displayedComponents: .date
                     )
                     .datePickerStyle(.graphical)
+                    .tint(Theme.purple)
                     .padding()
+                    .background(Theme.background)
                     .navigationTitle("Select Date")
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
@@ -56,103 +58,106 @@ struct NutritionView: View {
     private var content: some View {
         if viewModel.isLoading {
             Spacer()
-            ProgressView()
+            ProgressView().tint(Theme.purple)
             Spacer()
         } else if let message = viewModel.errorMessage {
             Spacer()
             Text(message).foregroundStyle(Theme.danger).font(.footnote).padding()
             Spacer()
         } else {
-            List {
-                dailyTotalsSection
+            ScrollView {
+                VStack(spacing: 14) {
+                    dailyTotalsCard
 
-                ForEach(NutritionViewModel.mealTypes, id: \.self) { mealType in
-                    mealSection(mealType)
+                    ForEach(NutritionViewModel.mealTypes, id: \.self) { mealType in
+                        mealCard(mealType)
+                    }
                 }
+                .padding(16)
             }
-            .scrollContentBackground(.hidden)
-            .background(Theme.background)
-            .listStyle(.insetGrouped)
         }
     }
 
-    private var dailyTotalsSection: some View {
-        Section {
-            VStack(spacing: 10) {
+    private var dailyTotalsCard: some View {
+        VStack(spacing: 12) {
+            VStack(spacing: 4) {
                 Text("\(Int(viewModel.totalCalories))")
-                    .font(.stat(30))
+                    .font(.stat(32))
                     .foregroundStyle(Theme.purple)
                     .shadow(color: Theme.purple.opacity(0.5), radius: 10)
                 Text("kcal today")
-                    .font(.caption)
+                    .font(.system(size: 11, weight: .medium))
+                    .textCase(.uppercase)
+                    .tracking(0.5)
                     .foregroundStyle(Theme.textSecondary)
-
-                HStack(spacing: 10) {
-                    macroChip("Protein", viewModel.totalProtein)
-                    macroChip("Carbs", viewModel.totalCarbs)
-                    macroChip("Fat", viewModel.totalFat)
-                }
-                .padding(.top, 4)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
-            .listRowBackground(Theme.surface)
-        }
-    }
 
-    private func macroChip(_ name: String, _ grams: Double) -> some View {
-        VStack(spacing: 2) {
-            Text("\(Int(grams))g")
-                .font(.stat(13))
-                .foregroundStyle(Theme.blue)
-            Text(name)
-                .font(.system(size: 9, weight: .medium))
-                .textCase(.uppercase)
-                .foregroundStyle(Theme.textSecondary)
+            HStack(spacing: 10) {
+                MacroChip(label: "Protein", value: "\(Int(viewModel.totalProtein))g")
+                MacroChip(label: "Carbs", value: "\(Int(viewModel.totalCarbs))g")
+                MacroChip(label: "Fat", value: "\(Int(viewModel.totalFat))g")
+            }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 6)
-        .background(Theme.blueBg)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(.vertical, 18)
+        .cardStyle()
     }
 
-    private func mealSection(_ mealType: String) -> some View {
-        DisclosureGroup(
-            isExpanded: Binding(
-                get: { expandedMeals.contains(mealType) },
-                set: { isExpanded in
+    private func mealCard(_ mealType: String) -> some View {
+        let mealEntries = viewModel.entries(for: mealType)
+        let isExpanded = expandedMeals.contains(mealType)
+
+        return VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
                     if isExpanded {
-                        expandedMeals.insert(mealType)
-                    } else {
                         expandedMeals.remove(mealType)
+                    } else {
+                        expandedMeals.insert(mealType)
                     }
                 }
-            )
-        ) {
-            let mealEntries = viewModel.entries(for: mealType)
-
-            ForEach(mealEntries) { entry in
-                NutritionLogRow(entry: entry)
-            }
-            .onDelete { offsets in
-                for index in offsets {
-                    viewModel.removeEntry(mealEntries[index])
+            } label: {
+                HStack {
+                    Text(mealType.capitalized)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(Theme.textSecondary)
+                        .rotationEffect(.degrees(isExpanded ? 0 : -90))
                 }
             }
+            .buttonStyle(.plain)
 
-            Button {
-                addingMealType = mealType
-            } label: {
-                Label("Add Food", systemImage: "plus")
-                    .font(.subheadline)
-                    .foregroundStyle(Theme.purple)
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 10) {
+                    if mealEntries.isEmpty {
+                        Text("Nothing logged")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Theme.textSecondary)
+                            .padding(.top, 12)
+                    } else {
+                        ForEach(mealEntries) { entry in
+                            NutritionLogRow(entry: entry) {
+                                viewModel.removeEntry(entry)
+                            }
+                        }
+                    }
+
+                    Button {
+                        addingMealType = mealType
+                    } label: {
+                        Label("Add Food", systemImage: "plus")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(Theme.purple)
+                    }
+                    .padding(.top, 2)
+                }
+                .padding(.top, 12)
             }
-        } label: {
-            Text(mealType.capitalized)
-                .font(.headline)
-                .foregroundStyle(Theme.textPrimary)
         }
-        .listRowBackground(Theme.surface)
+        .cardStyle()
     }
 
     private var dateHeader: some View {
@@ -189,15 +194,27 @@ struct NutritionView: View {
 
 private struct NutritionLogRow: View {
     let entry: NutritionLogRecord
+    var onDelete: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(entry.foodItem.name)
-                .font(.body)
-                .foregroundStyle(Theme.textPrimary)
-            Text("\(formattedNumber(entry.quantity))\(entry.quantityUnit) \u{00B7} \(Int(entry.calorieContribution)) kcal")
-                .font(.stat(11, weight: .medium))
-                .foregroundStyle(Theme.purpleSoft)
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(entry.foodItem.name)
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.textPrimary)
+                Text("\(formattedNumber(entry.quantity))\(entry.quantityUnit) \u{00B7} \(Int(entry.calorieContribution)) kcal")
+                    .font(.stat(11, weight: .medium))
+                    .foregroundStyle(Theme.purpleSoft)
+            }
+            Spacer()
+            Button {
+                onDelete()
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 15))
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            .buttonStyle(.plain)
         }
     }
 }

@@ -22,8 +22,11 @@ struct ExercisePickerView: View {
                     exerciseRow(exercise)
                 }
                 .buttonStyle(.plain)
-                .listRowBackground(Theme.surface)
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
             }
+            .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .background(Theme.background)
             .searchable(text: $searchText, prompt: "Search exercises")
@@ -77,6 +80,7 @@ struct ExercisePickerView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(exercise.name)
+                    .font(.system(size: 14))
                     .foregroundStyle(Theme.textPrimary)
                 Text(metadataLine(exercise))
                     .font(.caption)
@@ -88,6 +92,7 @@ struct ExercisePickerView: View {
                     .foregroundStyle(Theme.purple)
             }
         }
+        .cardStyle(padding: 12)
     }
 
     private func metadataLine(_ exercise: Exercise) -> String {

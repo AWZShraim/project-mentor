@@ -9,53 +9,54 @@ struct AuthView: View {
     @State private var isSigningUp = false
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 18) {
             Text("Mentor")
-                .font(.system(size: 36, weight: .bold))
+                .font(.system(size: 38, weight: .bold))
                 .foregroundStyle(Theme.purple)
-                .shadow(color: Theme.purple.opacity(0.5), radius: 14)
+                .shadow(color: Theme.purple.opacity(0.5), radius: 16)
 
-            if auth.pendingConfirmation {
-                TextField("Confirmation code", text: $confirmationCode)
-                    .textFieldStyle(.roundedBorder)
-                    .keyboardType(.numberPad)
-                Button("Confirm") {
-                    Task { await auth.confirmSignUp(email: email, code: confirmationCode) }
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.purple)
-            } else {
-                TextField("Email", text: $email)
-                    .textFieldStyle(.roundedBorder)
-                    .textInputAutocapitalization(.never)
-                    .keyboardType(.emailAddress)
-                SecureField("Password", text: $password)
-                    .textFieldStyle(.roundedBorder)
+            VStack(spacing: 12) {
+                if auth.pendingConfirmation {
+                    TextField("Confirmation code", text: $confirmationCode)
+                        .textFieldStyle(.themed)
+                        .keyboardType(.numberPad)
+                    Button("Confirm") {
+                        Task { await auth.confirmSignUp(email: email, code: confirmationCode) }
+                    }
+                    .buttonStyle(.mentorPrimary)
+                } else {
+                    TextField("Email", text: $email)
+                        .textFieldStyle(.themed)
+                        .textInputAutocapitalization(.never)
+                        .keyboardType(.emailAddress)
+                    SecureField("Password", text: $password)
+                        .textFieldStyle(.themed)
 
-                Button(isSigningUp ? "Sign Up" : "Sign In") {
-                    Task {
-                        if isSigningUp {
-                            await auth.signUp(email: email, password: password)
-                        } else {
-                            await auth.signIn(email: email, password: password)
+                    Button(isSigningUp ? "Sign Up" : "Sign In") {
+                        Task {
+                            if isSigningUp {
+                                await auth.signUp(email: email, password: password)
+                            } else {
+                                await auth.signIn(email: email, password: password)
+                            }
                         }
                     }
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.purple)
+                    .buttonStyle(.mentorPrimary)
 
-                Button(isSigningUp ? "Have an account? Sign in" : "New here? Sign up") {
-                    isSigningUp.toggle()
+                    Button(isSigningUp ? "Have an account? Sign in" : "New here? Sign up") {
+                        isSigningUp.toggle()
+                    }
+                    .font(.footnote)
+                    .foregroundStyle(Theme.blue)
                 }
-                .font(.footnote)
-                .foregroundStyle(Theme.blue)
-            }
 
-            if let message = auth.errorMessage {
-                Text(message).foregroundStyle(Theme.danger).font(.footnote)
+                if let message = auth.errorMessage {
+                    Text(message).foregroundStyle(Theme.danger).font(.footnote)
+                }
             }
+            .cardStyle(padding: 20)
         }
-        .padding()
+        .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.background)
     }

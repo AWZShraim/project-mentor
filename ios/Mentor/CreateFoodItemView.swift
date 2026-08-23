@@ -24,42 +24,52 @@ struct CreateFoodItemView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Nutrition (per serving)") {
-                    numberRow("Calories (kcal)", $calories)
-                    numberRow("Protein (g)", $protein)
-                    numberRow("Carbs (g)", $carbs)
-                    numberRow("Fat (g)", $fat)
-                }
-                .listRowBackground(Theme.surface)
+            ScrollView {
+                VStack(spacing: 18) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        SectionHeader("Nutrition (per serving)")
+                        numberRow("Calories (kcal)", $calories)
+                        numberRow("Protein (g)", $protein)
+                        numberRow("Carbs (g)", $carbs)
+                        numberRow("Fat (g)", $fat)
+                    }
+                    .cardStyle()
 
-                Section("Food") {
-                    TextField("Name", text: $name)
-                    TextField("Brand (optional)", text: $brand)
-                }
-                .listRowBackground(Theme.surface)
+                    VStack(alignment: .leading, spacing: 10) {
+                        SectionHeader("Food")
+                        TextField("Name", text: $name)
+                            .textFieldStyle(.themed)
+                        TextField("Brand (optional)", text: $brand)
+                            .textFieldStyle(.themed)
+                    }
+                    .cardStyle()
 
-                Section("Serving Size") {
-                    HStack {
-                        TextField("Amount", text: $servingSize)
-                            .keyboardType(.decimalPad)
-                        TextField("Unit (g, ml, ...)", text: $servingUnit)
+                    VStack(alignment: .leading, spacing: 10) {
+                        SectionHeader("Serving Size")
+                        HStack(spacing: 10) {
+                            TextField("Amount", text: $servingSize)
+                                .textFieldStyle(.themed)
+                                .keyboardType(.decimalPad)
+                            TextField("Unit (g, ml, ...)", text: $servingUnit)
+                                .textFieldStyle(.themed)
+                        }
+                    }
+                    .cardStyle()
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        SectionHeader("Optional")
+                        numberRow("Fiber (g)", $fiber)
+                        numberRow("Sugar (g)", $sugar)
+                        numberRow("Sodium (mg)", $sodium)
+                    }
+                    .cardStyle()
+
+                    if let message = errorMessage {
+                        Text(message).foregroundStyle(Theme.danger).font(.footnote)
                     }
                 }
-                .listRowBackground(Theme.surface)
-
-                Section("Optional") {
-                    numberRow("Fiber (g)", $fiber)
-                    numberRow("Sugar (g)", $sugar)
-                    numberRow("Sodium (mg)", $sodium)
-                }
-                .listRowBackground(Theme.surface)
-
-                if let message = errorMessage {
-                    Text(message).foregroundStyle(Theme.danger).font(.footnote)
-                }
+                .padding(16)
             }
-            .scrollContentBackground(.hidden)
             .background(Theme.background)
             .navigationTitle("New Food")
             .toolbar {
@@ -79,13 +89,15 @@ struct CreateFoodItemView: View {
     private func numberRow(_ label: String, _ text: Binding<String>) -> some View {
         HStack {
             Text(label)
-                .foregroundStyle(Theme.textPrimary)
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.textSecondary)
             Spacer()
             TextField("0", text: text)
                 .font(.stat(15, weight: .medium))
                 .foregroundStyle(Theme.purple)
                 .keyboardType(.decimalPad)
                 .multilineTextAlignment(.trailing)
+                .frame(width: 90)
         }
     }
 

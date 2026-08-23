@@ -14,34 +14,41 @@ struct TemplatePickerView: View {
         NavigationStack {
             Group {
                 if isLoading {
-                    ProgressView()
+                    ProgressView().tint(Theme.purple)
                 } else if let message = errorMessage {
                     Text(message).foregroundStyle(Theme.danger).padding()
                 } else if templates.isEmpty {
-                    ContentUnavailableView(
-                        "No days yet",
-                        systemImage: "calendar",
-                        description: Text("Create one from the Days screen first")
-                    )
+                    ScrollView {
+                        EmptyStateCard(
+                            icon: "calendar",
+                            title: "No days yet",
+                            message: "Create one from the Days screen first"
+                        )
+                        .padding(16)
+                    }
                 } else {
-                    List(templates) { template in
-                        Button {
-                            onSelect(template.exercises)
-                        } label: {
-                            VStack(alignment: .leading) {
-                                Text(template.name)
-                                    .font(.headline)
-                                    .foregroundStyle(Theme.textPrimary)
-                                Text("\(template.exercises.count) exercises")
-                                    .font(.caption)
-                                    .foregroundStyle(Theme.textSecondary)
+                    ScrollView {
+                        VStack(spacing: 10) {
+                            ForEach(templates) { template in
+                                Button {
+                                    onSelect(template.exercises)
+                                } label: {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(template.name)
+                                            .font(.system(size: 15, weight: .semibold))
+                                            .foregroundStyle(Theme.textPrimary)
+                                        Text("\(template.exercises.count) exercises")
+                                            .font(.caption)
+                                            .foregroundStyle(Theme.textSecondary)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                                .buttonStyle(.plain)
+                                .cardStyle()
                             }
                         }
-                        .buttonStyle(.plain)
-                        .listRowBackground(Theme.surface)
+                        .padding(16)
                     }
-                    .scrollContentBackground(.hidden)
-                    .background(Theme.background)
                 }
             }
             .background(Theme.background)

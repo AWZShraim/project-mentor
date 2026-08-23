@@ -15,6 +15,7 @@ struct AddFoodView: View {
                     Text("My Library").tag(1)
                 }
                 .pickerStyle(.segmented)
+                .tint(Theme.purple)
                 .padding()
 
                 if selectedTab == 0 {
@@ -51,7 +52,7 @@ private struct OpenFoodFactsSearchView: View {
         VStack(spacing: 0) {
             HStack {
                 TextField("Search foods", text: $searchText)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.themed)
                     .onSubmit { Task { await search() } }
                 Button("Search") { Task { await search() } }
                     .tint(Theme.purple)
@@ -62,7 +63,7 @@ private struct OpenFoodFactsSearchView: View {
 
             if isSearching {
                 Spacer()
-                ProgressView()
+                ProgressView().tint(Theme.purple)
                 Spacer()
             } else if let message = errorMessage {
                 Spacer()
@@ -77,23 +78,28 @@ private struct OpenFoodFactsSearchView: View {
                     .padding()
                 Spacer()
             } else {
-                List(results) { product in
-                    Button {
-                        selectedProduct = product
-                    } label: {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(product.name).foregroundStyle(Theme.textPrimary)
-                            Text("\(Int(product.caloriesPer100g)) kcal / 100g" + (product.brand.map { " \u{00B7} \($0)" } ?? ""))
-                                .font(.stat(11, weight: .medium))
-                                .foregroundStyle(Theme.purpleSoft)
+                ScrollView {
+                    VStack(spacing: 8) {
+                        ForEach(results) { product in
+                            Button {
+                                selectedProduct = product
+                            } label: {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(product.name)
+                                        .font(.system(size: 14))
+                                        .foregroundStyle(Theme.textPrimary)
+                                    Text("\(Int(product.caloriesPer100g)) kcal / 100g" + (product.brand.map { " \u{00B7} \($0)" } ?? ""))
+                                        .font(.stat(11, weight: .medium))
+                                        .foregroundStyle(Theme.purpleSoft)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .buttonStyle(.plain)
+                            .cardStyle(padding: 12)
                         }
                     }
-                    .buttonStyle(.plain)
-                    .listRowBackground(Theme.surface)
+                    .padding(16)
                 }
-                .scrollContentBackground(.hidden)
-                .background(Theme.background)
-                .listStyle(.plain)
             }
         }
         .background(Theme.background)
@@ -142,45 +148,39 @@ private struct PersonalLibraryView: View {
     var body: some View {
         Group {
             if isLoading {
-                ProgressView()
+                ProgressView().tint(Theme.purple)
             } else {
-                List {
-                    if searchText.isEmpty && !recentItems.isEmpty {
-                        Section("Recent") {
-                            ForEach(recentItems) { item in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 18) {
+                        if searchText.isEmpty && !recentItems.isEmpty {
+                            VStack(alignment: .leading, spacing: 8) {
+                                SectionHeader("Recent")
+                                ForEach(recentItems) { item in
+                                    foodRow(item)
+                                }
+                            }
+                        }
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            SectionHeader(searchText.isEmpty ? "All Foods" : "Results")
+                            ForEach(filteredItems) { item in
                                 foodRow(item)
                             }
                         }
-                        .listRowBackground(Theme.surface)
-                    }
 
-                    Section(searchText.isEmpty ? "All Foods" : "Results") {
-                        ForEach(filteredItems) { item in
-                            foodRow(item)
-                        }
-                    }
-                    .listRowBackground(Theme.surface)
-
-                    Section {
                         Button {
                             showingCreate = true
                         } label: {
                             Label("Create New Food", systemImage: "plus")
-                                .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(Theme.purple)
-                    }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
+                        .buttonStyle(.mentorPrimary)
 
-                    if let message = errorMessage {
-                        Text(message).foregroundStyle(Theme.danger).font(.footnote)
+                        if let message = errorMessage {
+                            Text(message).foregroundStyle(Theme.danger).font(.footnote)
+                        }
                     }
+                    .padding(16)
                 }
-                .scrollContentBackground(.hidden)
-                .background(Theme.background)
-                .listStyle(.plain)
             }
         }
         .background(Theme.background)
@@ -208,13 +208,17 @@ private struct PersonalLibraryView: View {
             selectedItem = item
         } label: {
             VStack(alignment: .leading, spacing: 2) {
-                Text(item.name).foregroundStyle(Theme.textPrimary)
+                Text(item.name)
+                    .font(.system(size: 14))
+                    .foregroundStyle(Theme.textPrimary)
                 Text("\(Int(item.calories)) kcal / \(formattedNumber(item.servingSize))\(item.servingUnit)")
                     .font(.stat(11, weight: .medium))
                     .foregroundStyle(Theme.purpleSoft)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .buttonStyle(.plain)
+        .cardStyle(padding: 12)
     }
 
     private var filteredItems: [FoodItem] {

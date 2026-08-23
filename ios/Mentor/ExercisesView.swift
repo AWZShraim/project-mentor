@@ -44,7 +44,9 @@ struct ExercisesView: View {
                         displayedComponents: .date
                     )
                     .datePickerStyle(.graphical)
+                    .tint(Theme.purple)
                     .padding()
+                    .background(Theme.background)
                     .navigationTitle("Select Date")
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
@@ -69,7 +71,7 @@ struct ExercisesView: View {
         } label: {
             Image(systemName: "calendar")
                 .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(Theme.textPrimary)
+                .foregroundStyle(Theme.background)
                 .frame(width: 52, height: 52)
                 .background(Theme.purple)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
@@ -81,53 +83,44 @@ struct ExercisesView: View {
     private var content: some View {
         if viewModel.isLoading {
             Spacer()
-            ProgressView()
+            ProgressView().tint(Theme.purple)
             Spacer()
         } else if let message = viewModel.errorMessage {
             Spacer()
             Text(message).foregroundStyle(Theme.danger).font(.footnote).padding()
             Spacer()
         } else {
-            List {
-                ForEach(viewModel.entries) { entry in
-                    EditableExerciseRow(entry: entry, viewModel: viewModel)
-                        .listRowBackground(Theme.surface)
-                }
+            ScrollView {
+                VStack(spacing: 14) {
+                    ForEach(viewModel.entries) { entry in
+                        EditableExerciseRow(entry: entry, viewModel: viewModel)
+                    }
 
-                Section {
                     actionButtons
                 }
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
+                .padding(16)
+                .padding(.bottom, 60)
             }
-            .scrollContentBackground(.hidden)
-            .background(Theme.background)
-            .listStyle(.plain)
         }
     }
 
     private var actionButtons: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             Button {
                 showingDayPicker = true
             } label: {
                 Label("Add Day", systemImage: "calendar")
-                    .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(Theme.purple)
+            .buttonStyle(.mentorPrimary)
 
             Button {
                 showingExercisePicker = true
             } label: {
                 Label("Add Exercise", systemImage: "plus")
-                    .frame(maxWidth: .infinity)
-                    .foregroundStyle(Theme.purple)
             }
-            .buttonStyle(.bordered)
-            .tint(Theme.purple)
+            .buttonStyle(.mentorSecondary)
         }
-        .padding(.vertical, 8)
+        .padding(.top, 4)
     }
 
     private var dateHeader: some View {
@@ -167,10 +160,10 @@ private struct EditableExerciseRow: View {
     let viewModel: ExercisesViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text(entry.exercise.name)
-                    .font(.headline)
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 unitPicker
@@ -178,6 +171,7 @@ private struct EditableExerciseRow: View {
                     viewModel.removeEntry(entry)
                 } label: {
                     Image(systemName: "trash")
+                        .font(.system(size: 13))
                         .foregroundStyle(Theme.danger)
                 }
                 .buttonStyle(.plain)
@@ -191,11 +185,11 @@ private struct EditableExerciseRow: View {
                 viewModel.addSet(to: entry)
             } label: {
                 Label("Add Set", systemImage: "plus")
-                    .font(.caption)
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(Theme.blue)
             }
         }
-        .padding(.vertical, 8)
+        .cardStyle()
         .onChange(of: entry.sets) { _, _ in
             viewModel.scheduleSave(for: entry)
         }
@@ -233,39 +227,39 @@ private struct EditableExerciseRow: View {
 
     @ViewBuilder
     private func setRow(row: Binding<SetInputRow>) -> some View {
-        HStack {
+        HStack(spacing: 8) {
             Text("Set \(row.wrappedValue.setNumber)")
                 .font(.stat(11, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
-                .frame(width: 44, alignment: .leading)
+                .frame(width: 40, alignment: .leading)
 
             switch entry.exercise.loggingType {
             case "reps_weight":
                 TextField("Reps", text: row.reps)
                     .keyboardType(.numberPad)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.themed)
                 TextField("Weight", text: row.weight)
                     .keyboardType(.decimalPad)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.themed)
             case "reps_only":
                 TextField("Reps", text: row.reps)
                     .keyboardType(.numberPad)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.themed)
             case "duration":
                 TextField("Seconds", text: row.durationSeconds)
                     .keyboardType(.numberPad)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.themed)
             case "distance":
                 TextField("Distance", text: row.distance)
                     .keyboardType(.decimalPad)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.themed)
                 TextField("Seconds", text: row.durationSeconds)
                     .keyboardType(.numberPad)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.themed)
             default:
                 TextField("Reps", text: row.reps)
                     .keyboardType(.numberPad)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.themed)
             }
 
             if entry.sets.count > 1 {

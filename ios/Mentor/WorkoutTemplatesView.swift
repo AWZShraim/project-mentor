@@ -14,49 +14,47 @@ struct WorkoutTemplatesView: View {
         NavigationStack {
             Group {
                 if isLoading {
-                    ProgressView()
+                    ProgressView().tint(Theme.purple)
                 } else {
-                    List {
-                        ForEach(templates) { template in
-                            Button {
-                                editingTemplate = template
-                            } label: {
-                                VStack(alignment: .leading) {
-                                    Text(template.name)
-                                        .font(.headline)
-                                        .foregroundStyle(Theme.textPrimary)
-                                    Text(template.exercises.map(\.name).joined(separator: ", "))
-                                        .font(.caption)
-                                        .foregroundStyle(Theme.textSecondary)
-                                        .lineLimit(2)
+                    ScrollView {
+                        VStack(spacing: 10) {
+                            ForEach(templates) { template in
+                                Button {
+                                    editingTemplate = template
+                                } label: {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(template.name)
+                                            .font(.system(size: 15, weight: .semibold))
+                                            .foregroundStyle(Theme.textPrimary)
+                                        Text(template.exercises.map(\.name).joined(separator: ", "))
+                                            .font(.caption)
+                                            .foregroundStyle(Theme.textSecondary)
+                                            .lineLimit(2)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                                .buttonStyle(.plain)
+                                .cardStyle()
+                                .contextMenu {
+                                    Button("Delete", role: .destructive) {
+                                        Task { await delete(template) }
+                                    }
                                 }
                             }
-                            .buttonStyle(.plain)
-                            .listRowBackground(Theme.surface)
-                        }
-                        .onDelete { offsets in
-                            Task { await delete(at: offsets) }
-                        }
 
-                        Section {
                             Button {
                                 showingCreateSheet = true
                             } label: {
                                 Label("Create Day", systemImage: "plus")
-                                    .frame(maxWidth: .infinity)
                             }
-                            .buttonStyle(.borderedProminent)
-                            .tint(Theme.purple)
-                        }
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
+                            .buttonStyle(.mentorPrimary)
 
-                        if let message = errorMessage {
-                            Text(message).foregroundStyle(Theme.danger).font(.footnote)
+                            if let message = errorMessage {
+                                Text(message).foregroundStyle(Theme.danger).font(.footnote)
+                            }
                         }
+                        .padding(16)
                     }
-                    .scrollContentBackground(.hidden)
-                    .background(Theme.background)
                 }
             }
             .background(Theme.background)
@@ -93,17 +91,14 @@ struct WorkoutTemplatesView: View {
         }
     }
 
-    private func delete(at offsets: IndexSet) async {
+    private func delete(_ template: WorkoutTemplate) async {
         guard let token = AuthTokenStore.current else { return }
-        for index in offsets {
-            let template = templates[index]
-            do {
-                try await api.deleteTemplate(id: template.id, accessToken: token)
-            } catch {
-                errorMessage = error.localizedDescription
-            }
+        do {
+            try await api.deleteTemplate(id: template.id, accessToken: token)
+            templates.removeAll { $0.id == template.id }
+        } catch {
+            errorMessage = error.localizedDescription
         }
-        await load()
     }
 }
 
@@ -132,45 +127,63 @@ struct CreateWorkoutTemplateView: View {
             List {
                 Section {
                     TextField("Day name (e.g. Push Day)", text: $name)
+                        .textFieldStyle(.themed)
                 }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
 
                 if !selectedExercises.isEmpty {
-                    Section("Selected Exercises") {
+                    Section {
                         ForEach(selectedExercises) { exercise in
                             Button {
                                 deselect(exercise)
                             } label: {
                                 HStack {
                                     Text(exercise.name)
+                                        .font(.system(size: 14))
                                         .foregroundStyle(Theme.textPrimary)
                                     Spacer()
                                     Image(systemName: "checkmark.circle.fill")
                                         .foregroundStyle(Theme.purple)
                                 }
+                                .cardStyle(padding: 12)
                             }
                             .buttonStyle(.plain)
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                         }
-                        .listRowBackground(Theme.surface)
+                    } header: {
+                        SectionHeader("Selected Exercises")
                     }
                 }
 
-                Section("Exercises") {
+                Section {
                     ForEach(availableExercises) { exercise in
                         Button {
                             select(exercise)
                         } label: {
                             Text(exercise.name)
+                                .font(.system(size: 14))
                                 .foregroundStyle(Theme.textPrimary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .cardStyle(padding: 12)
                         }
                         .buttonStyle(.plain)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                     }
-                    .listRowBackground(Theme.surface)
+                } header: {
+                    SectionHeader("Exercises")
                 }
 
                 if let message = errorMessage {
                     Text(message).foregroundStyle(Theme.danger).font(.footnote)
                 }
             }
+            .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .background(Theme.background)
             .searchable(text: $searchText, prompt: "Search exercises")
@@ -188,7 +201,7 @@ struct CreateWorkoutTemplateView: View {
             }
             .overlay {
                 if isLoadingExercises {
-                    ProgressView()
+                    ProgressView().tint(Theme.purple)
                 }
             }
             .task {

@@ -5,22 +5,30 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                Section("Account") {
-                    if let user = auth.currentUser {
-                        LabeledContent("Email", value: user.email)
-                    } else {
-                        ProgressView()
+            ScrollView {
+                VStack(spacing: 14) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Account")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Theme.textSecondary)
+                        if let user = auth.currentUser {
+                            Text(user.email)
+                                .font(.system(size: 15))
+                                .foregroundStyle(Theme.textPrimary)
+                        } else {
+                            ProgressView().tint(Theme.purple)
+                        }
                     }
-                }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .cardStyle()
 
-                Section {
-                    Button("Sign Out", role: .destructive) {
+                    Button("Sign Out") {
                         auth.signOut()
                     }
+                    .buttonStyle(.mentorSecondary(tint: Theme.danger))
                 }
+                .padding(16)
             }
-            .scrollContentBackground(.hidden)
             .background(Theme.background)
             .navigationTitle("Settings")
             .task {

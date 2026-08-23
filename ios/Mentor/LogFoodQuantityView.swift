@@ -34,27 +34,36 @@ struct LogFoodQuantityView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section(displayName) {
+            VStack(spacing: 14) {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(displayName)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+
                     HStack {
                         Text("Quantity")
-                            .foregroundStyle(Theme.textPrimary)
+                            .font(.system(size: 13))
+                            .foregroundStyle(Theme.textSecondary)
                         Spacer()
                         TextField("Amount", text: $quantity)
+                            .textFieldStyle(.themed)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
-                            .frame(width: 80)
+                            .frame(width: 90)
                         Text(servingUnit)
+                            .font(.system(size: 13))
                             .foregroundStyle(Theme.textSecondary)
                     }
                 }
-                .listRowBackground(Theme.surface)
+                .cardStyle()
 
                 if let message = errorMessage {
                     Text(message).foregroundStyle(Theme.danger).font(.footnote)
                 }
+
+                Spacer()
             }
-            .scrollContentBackground(.hidden)
+            .padding(16)
             .background(Theme.background)
             .navigationTitle("Log Food")
             .toolbar {
