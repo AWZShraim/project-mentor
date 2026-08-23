@@ -13,12 +13,14 @@ extension Color {
 }
 
 /// Purple-primary, blue-for-structure-only. Dark mode only, by design -
-/// no light variant.
+/// no light variant. Surfaces lean visibly purple rather than neutral
+/// gray - a desaturated near-black reads as "just dark mode," not
+/// cyberpunk.
 enum Theme {
     static let background = Color(hex: "0A0810")
-    static let surface = Color(hex: "16111F")
-    static let surfaceElevated = Color(hex: "1F1830")
-    static let border = Color(hex: "332A47")
+    static let surface = Color(hex: "1C1130")
+    static let surfaceElevated = Color(hex: "271A47")
+    static let border = Color(hex: "4C3670")
 
     static let textPrimary = Color(hex: "F3EFFA")
     static let textSecondary = Color(hex: "9691AC")
@@ -41,5 +43,25 @@ extension Font {
     /// SF gives the "data terminal" feel without bundling a custom font.
     static func stat(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
         .system(size: size, weight: weight, design: .monospaced)
+    }
+
+    /// Screen titles and other brand-carrying headers. Chakra Petch is
+    /// bundled as a font resource (see Info.plist UIAppFonts); falls back
+    /// to the system font automatically if the exact PostScript name
+    /// doesn't match what's registered - never crashes.
+    static func display(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
+        let name = weight == .bold ? "ChakraPetch-Bold" : "ChakraPetch-SemiBold"
+        return .custom(name, size: size)
+    }
+}
+
+extension View {
+    /// Stronger, more deliberate glow than a default shadow - for the
+    /// handful of elements that should actually read as "lit up"
+    /// (headline stat numbers, the brand wordmark).
+    func neonGlow(_ color: Color, radius: CGFloat = 16) -> some View {
+        self
+            .shadow(color: color.opacity(0.8), radius: radius / 2)
+            .shadow(color: color.opacity(0.5), radius: radius)
     }
 }

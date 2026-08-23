@@ -11,9 +11,9 @@ struct AuthView: View {
     var body: some View {
         VStack(spacing: 18) {
             Text("Mentor")
-                .font(.system(size: 38, weight: .bold))
+                .font(.display(38))
                 .foregroundStyle(Theme.purple)
-                .shadow(color: Theme.purple.opacity(0.5), radius: 16)
+                .neonGlow(Theme.purple, radius: 20)
 
             VStack(spacing: 12) {
                 if auth.pendingConfirmation {

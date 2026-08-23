@@ -100,7 +100,7 @@ struct StatBlock: View {
             Text(value)
                 .font(.stat(30))
                 .foregroundStyle(Theme.purple)
-                .shadow(color: Theme.purple.opacity(0.5), radius: 10)
+                .neonGlow(Theme.purple)
             Text(label)
                 .font(.system(size: 11, weight: .medium))
                 .textCase(.uppercase)
@@ -147,7 +147,7 @@ struct ScreenTitle: View {
 
     var body: some View {
         Text(title)
-            .font(.system(size: 26, weight: .bold))
+            .font(.display(26))
             .foregroundStyle(Theme.textPrimary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 16)

@@ -7,5 +7,10 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>ChakraPetch-Bold.ttf</string>
+		<string>ChakraPetch-SemiBold.ttf</string>
+	</array>
 </dict>
 </plist>
