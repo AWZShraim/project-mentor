@@ -36,6 +36,17 @@ enum Theme {
     static let blueBg = Color(hex: "142433")
 
     static let danger = Color(hex: "F87171")
+
+    /// Cards read as flat paint chips without this - a faint top-to-bottom
+    /// lightening is what separates "elevated glass panel" from "colored
+    /// rectangle." Used as the fill for every card via cardStyle().
+    static let cardFill = LinearGradient(
+        colors: [surfaceElevated.opacity(0.85), surface],
+        startPoint: .top,
+        endPoint: .bottom
+    )
+
+    static let cardRadius: CGFloat = 22
 }
 
 extension Font {
@@ -63,5 +74,37 @@ extension View {
         self
             .shadow(color: color.opacity(0.8), radius: radius / 2)
             .shadow(color: color.opacity(0.5), radius: radius)
+    }
+}
+
+/// Every screen background: flat near-black plus a soft purple bloom
+/// bleeding down from the top. Flat black alone reads as generic "dark
+/// mode"; a lit environment behind the content is what makes the accent
+/// colors feel like they're actually glowing against something, not just
+/// drawn on a black rectangle.
+struct AmbientBackground: View {
+    var body: some View {
+        ZStack {
+            Theme.background
+            RadialGradient(
+                colors: [Theme.purple.opacity(0.20), Theme.purple.opacity(0.0)],
+                center: .top,
+                startRadius: 0,
+                endRadius: 380
+            )
+            .frame(height: 460)
+            .frame(maxWidth: .infinity)
+            .offset(y: -180)
+
+            RadialGradient(
+                colors: [Theme.blue.opacity(0.10), Theme.blue.opacity(0.0)],
+                center: .bottomTrailing,
+                startRadius: 0,
+                endRadius: 340
+            )
+            .frame(height: 420)
+            .frame(maxWidth: .infinity)
+        }
+        .ignoresSafeArea()
     }
 }

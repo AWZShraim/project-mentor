@@ -9,14 +9,16 @@ struct SettingsView: View {
                 ScreenTitle(title: "Settings")
 
                 ScrollView {
-                    VStack(spacing: 14) {
-                        VStack(alignment: .leading, spacing: 4) {
+                    VStack(spacing: 18) {
+                        VStack(alignment: .leading, spacing: 6) {
                             Text("Account")
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.system(size: 12, weight: .semibold))
+                                .textCase(.uppercase)
+                                .tracking(0.8)
                                 .foregroundStyle(Theme.textSecondary)
                             if let user = auth.currentUser {
                                 Text(user.email)
-                                    .font(.system(size: 15))
+                                    .font(.system(size: 15, weight: .medium))
                                     .foregroundStyle(Theme.textPrimary)
                             } else {
                                 ProgressView().tint(Theme.purple)
@@ -30,11 +32,11 @@ struct SettingsView: View {
                         }
                         .buttonStyle(.mentorSecondary(tint: Theme.danger))
                     }
-                    .padding(16)
+                    .padding(18)
                 }
                 .tabBarSafeArea()
             }
-            .background(Theme.background)
+            .background(AmbientBackground())
             .hiddenNavBar()
             .task {
                 if auth.currentUser == nil {

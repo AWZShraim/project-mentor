@@ -7,21 +7,22 @@ struct CoachView: View {
                 ScreenTitle(title: "Coach")
 
                 Spacer()
-                VStack(spacing: 12) {
+                VStack(spacing: 14) {
                     Image(systemName: "sparkles")
                         .font(.system(size: 48))
                         .foregroundStyle(Theme.purple)
-                        .shadow(color: Theme.purple.opacity(0.5), radius: 12)
+                        .neonGlow(Theme.purple, radius: 24)
                     Text("AI Coach")
                         .font(.title2.bold())
                         .foregroundStyle(Theme.textPrimary)
                     Text("Coming soon")
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(Theme.textSecondary)
                 }
                 Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Theme.background)
+            .background(AmbientBackground())
             .hiddenNavBar()
         }
     }

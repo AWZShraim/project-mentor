@@ -14,7 +14,7 @@ struct NutritionView: View {
                 Divider().overlay(Theme.border)
                 content
             }
-            .background(Theme.background)
+            .background(AmbientBackground())
             .hiddenNavBar()
             .sheet(isPresented: Binding(
                 get: { addingMealType != nil },
@@ -68,30 +68,30 @@ struct NutritionView: View {
             Spacer()
         } else {
             ScrollView {
-                VStack(spacing: 14) {
+                VStack(spacing: 18) {
                     dailyTotalsCard
 
                     ForEach(NutritionViewModel.mealTypes, id: \.self) { mealType in
                         mealCard(mealType)
                     }
                 }
-                .padding(16)
+                .padding(18)
             }
             .tabBarSafeArea()
         }
     }
 
     private var dailyTotalsCard: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 18) {
             VStack(spacing: 4) {
-                Text("\(Int(viewModel.totalCalories))")
-                    .font(.stat(40))
+                Text(Int(viewModel.totalCalories).formatted())
+                    .font(.stat(44, weight: .heavy))
                     .foregroundStyle(Theme.purple)
-                    .neonGlow(Theme.purple, radius: 20)
+                    .neonGlow(Theme.purple, radius: 24)
                 Text("kcal today")
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 11, weight: .semibold))
                     .textCase(.uppercase)
-                    .tracking(0.5)
+                    .tracking(1.2)
                     .foregroundStyle(Theme.textSecondary)
             }
 
@@ -102,7 +102,7 @@ struct NutritionView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
+        .padding(.vertical, 24)
         .cardStyle(glow: true)
     }
 
@@ -122,24 +122,24 @@ struct NutritionView: View {
             } label: {
                 HStack {
                     Text(mealType.capitalized)
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.system(size: 16, weight: .bold))
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Theme.textSecondary)
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(Theme.purpleSoft)
                         .rotationEffect(.degrees(isExpanded ? 0 : -90))
                 }
             }
             .buttonStyle(.plain)
 
             if isExpanded {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 12) {
                     if mealEntries.isEmpty {
                         Text("Nothing logged")
                             .font(.system(size: 12))
                             .foregroundStyle(Theme.textSecondary)
-                            .padding(.top, 12)
+                            .padding(.top, 14)
                     } else {
                         ForEach(mealEntries) { entry in
                             NutritionLogRow(entry: entry) {
@@ -151,13 +151,13 @@ struct NutritionView: View {
                     Button {
                         addingMealType = mealType
                     } label: {
-                        Label("Add Food", systemImage: "plus")
-                            .font(.system(size: 13, weight: .medium))
+                        Label("Add Food", systemImage: "plus.circle.fill")
+                            .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(Theme.purple)
                     }
                     .padding(.top, 2)
                 }
-                .padding(.top, 12)
+                .padding(.top, 14)
             }
         }
         .cardStyle()
@@ -201,12 +201,12 @@ private struct NutritionLogRow: View {
 
     var body: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(entry.foodItem.name)
-                    .font(.system(size: 13))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                 Text("\(formattedNumber(entry.quantity))\(entry.quantityUnit) \u{00B7} \(Int(entry.calorieContribution)) kcal")
-                    .font(.stat(11, weight: .medium))
+                    .font(.stat(11, weight: .semibold))
                     .foregroundStyle(Theme.purpleSoft)
             }
             Spacer()
@@ -214,11 +214,15 @@ private struct NutritionLogRow: View {
                 onDelete()
             } label: {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 15))
+                    .font(.system(size: 16))
                     .foregroundStyle(Theme.textSecondary)
             }
             .buttonStyle(.plain)
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Theme.surfaceElevated.opacity(0.6))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 

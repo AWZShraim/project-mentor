@@ -79,14 +79,25 @@ struct FloatingTabBar: View {
         )
         .background(
             Capsule()
-                .fill(Theme.surface.opacity(0.7))
+                .fill(Theme.surfaceElevated.opacity(0.75))
         )
         .overlay(
             Capsule()
                 .stroke(Theme.border, lineWidth: 1)
         )
-        .shadow(color: .black.opacity(0.5), radius: 20, y: 8)
-        .shadow(color: Theme.purple.opacity(0.25), radius: 24, y: 4)
+        .overlay(
+            Capsule()
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.22), Color.white.opacity(0)],
+                        startPoint: .top,
+                        endPoint: .center
+                    ),
+                    lineWidth: 1
+                )
+        )
+        .shadow(color: .black.opacity(0.55), radius: 24, y: 10)
+        .shadow(color: Theme.purple.opacity(0.3), radius: 28, y: 4)
         .padding(.horizontal, 24)
         .padding(.bottom, 10)
     }

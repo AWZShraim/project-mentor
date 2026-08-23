@@ -16,7 +16,7 @@ struct ExercisesView: View {
                     Divider().overlay(Theme.border)
                     content
                 }
-                .background(Theme.background)
+                .background(AmbientBackground())
 
                 manageDaysButton
                     .padding(.trailing, 16)
@@ -77,8 +77,8 @@ struct ExercisesView: View {
                 .foregroundStyle(Theme.background)
                 .frame(width: 52, height: 52)
                 .background(Theme.purple)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .shadow(color: Theme.purple.opacity(0.5), radius: 10)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .shadow(color: Theme.purple.opacity(0.6), radius: 16)
         }
     }
 
@@ -94,14 +94,14 @@ struct ExercisesView: View {
             Spacer()
         } else {
             ScrollView {
-                VStack(spacing: 14) {
+                VStack(spacing: 18) {
                     ForEach(viewModel.entries) { entry in
                         EditableExerciseRow(entry: entry, viewModel: viewModel)
                     }
 
                     actionButtons
                 }
-                .padding(16)
+                .padding(18)
             }
             .tabBarSafeArea()
         }

@@ -3,8 +3,8 @@ import SwiftUI
 // MARK: - Card surface
 
 struct CardBackground: ViewModifier {
-    var padding: CGFloat = 16
-    var cornerRadius: CGFloat = 18
+    var padding: CGFloat = 18
+    var cornerRadius: CGFloat = Theme.cardRadius
     /// Hero cards (e.g. the daily totals readout) get an ambient purple
     /// bloom instead of a plain drop shadow, so they read as "lit up"
     /// rather than just elevated.
@@ -13,18 +13,34 @@ struct CardBackground: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(padding)
-            .background(Theme.surface)
+            .background(Theme.cardFill)
             .overlay(
+                // Base identity border.
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(glow ? Theme.purple.opacity(0.4) : Theme.border, lineWidth: 1)
+                    .stroke(glow ? Theme.purple.opacity(0.55) : Theme.border, lineWidth: 1)
+            )
+            .overlay(
+                // Top glass sheen - a hairline that fades from bright to
+                // nothing, so the card reads as lit from above rather
+                // than a uniformly flat panel.
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.18), Color.white.opacity(0)],
+                            startPoint: .top,
+                            endPoint: .center
+                        ),
+                        lineWidth: 1
+                    )
             )
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-            .shadow(color: glow ? Theme.purple.opacity(0.22) : Color.black.opacity(0.3), radius: glow ? 22 : 12, y: 6)
+            .shadow(color: Color.black.opacity(0.45), radius: 16, y: 10)
+            .shadow(color: glow ? Theme.purple.opacity(0.45) : .clear, radius: 34)
     }
 }
 
 extension View {
-    func cardStyle(padding: CGFloat = 16, cornerRadius: CGFloat = 18, glow: Bool = false) -> some View {
+    func cardStyle(padding: CGFloat = 18, cornerRadius: CGFloat = Theme.cardRadius, glow: Bool = false) -> some View {
         modifier(CardBackground(padding: padding, cornerRadius: cornerRadius, glow: glow))
     }
 }
@@ -104,17 +120,17 @@ struct StatBlock: View {
     var body: some View {
         VStack(spacing: 6) {
             Text(value)
-                .font(.stat(36))
+                .font(.stat(38, weight: .heavy))
                 .foregroundStyle(Theme.purple)
-                .neonGlow(Theme.purple)
+                .neonGlow(Theme.purple, radius: 22)
             Text(label)
-                .font(.system(size: 11, weight: .medium))
+                .font(.system(size: 11, weight: .semibold))
                 .textCase(.uppercase)
-                .tracking(0.5)
+                .tracking(1.2)
                 .foregroundStyle(Theme.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
+        .padding(.vertical, 18)
         .cardStyle(glow: true)
     }
 }
@@ -126,22 +142,29 @@ struct MacroChip: View {
     var body: some View {
         VStack(spacing: 4) {
             Text(value)
-                .font(.stat(16))
+                .font(.stat(18, weight: .heavy))
                 .foregroundStyle(Theme.blue)
             Text(label)
-                .font(.system(size: 10, weight: .medium))
+                .font(.system(size: 10, weight: .semibold))
                 .textCase(.uppercase)
-                .tracking(0.3)
+                .tracking(0.8)
                 .foregroundStyle(Theme.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 10)
-        .background(Theme.blueBg)
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Theme.blue.opacity(0.4), lineWidth: 1)
+        .padding(.vertical, 12)
+        .background(
+            LinearGradient(
+                colors: [Theme.blueBg, Theme.blueBg.opacity(0.5)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
         )
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Theme.blue.opacity(0.45), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .shadow(color: Theme.blue.opacity(0.18), radius: 12)
     }
 }
 
@@ -154,12 +177,18 @@ struct ScreenTitle: View {
 
     var body: some View {
         Text(title)
-            .font(.display(26))
+            .font(.display(28))
+            // Belt-and-suspenders: if ChakraPetch isn't registered, the
+            // custom font silently falls back to system-regular. Chaining
+            // fontWeight keeps titles bold either way instead of looking
+            // thin when the font resource is missing.
+            .fontWeight(.bold)
+            .tracking(0.3)
             .foregroundStyle(Theme.textPrimary)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .padding(.bottom, 4)
+            .padding(.horizontal, 18)
+            .padding(.top, 14)
+            .padding(.bottom, 6)
     }
 }
 
