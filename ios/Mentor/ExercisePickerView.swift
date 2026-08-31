@@ -28,6 +28,7 @@ struct ExercisePickerView: View {
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
+            .scrollDismissesKeyboard(.interactively)
             .background(Theme.background)
             .searchable(text: $searchText, prompt: "Search exercises")
             .navigationTitle("Choose Exercises")

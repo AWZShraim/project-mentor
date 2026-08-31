@@ -111,6 +111,7 @@ private struct OpenFoodFactsSearchView: View {
                     }
                     .padding(16)
                 }
+                .scrollDismissesKeyboard(.interactively)
             }
         }
         .background(Theme.background)
@@ -212,6 +213,7 @@ private struct PersonalLibraryView: View {
                     }
                     .padding(16)
                 }
+                .scrollDismissesKeyboard(.interactively)
             }
         }
         .background(Theme.background)

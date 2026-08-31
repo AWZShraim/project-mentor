@@ -70,6 +70,7 @@ struct CreateFoodItemView: View {
                 }
                 .padding(16)
             }
+            .scrollDismissesKeyboard(.interactively)
             .background(Theme.background)
             .navigationTitle("New Food")
             .darkNavBar()

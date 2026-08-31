@@ -59,5 +59,6 @@ struct AuthView: View {
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.background)
+        .dismissKeyboardOnTap()
     }
 }

@@ -65,6 +65,7 @@ struct LogFoodQuantityView: View {
             }
             .padding(16)
             .background(Theme.background)
+            .dismissKeyboardOnTap()
             .navigationTitle("Log Food")
             .darkNavBar()
             .toolbar {

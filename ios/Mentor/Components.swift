@@ -1,4 +1,21 @@
 import SwiftUI
+import UIKit
+
+// MARK: - Keyboard dismissal
+
+extension View {
+    /// Tapping anywhere outside a focused field dismisses the keyboard.
+    /// SwiftUI has no built-in affordance for this - without it the only
+    /// way off the keyboard is submitting the field, which is why this
+    /// is applied broadly rather than per-screen.
+    func dismissKeyboardOnTap() -> some View {
+        self.onTapGesture {
+            UIApplication.shared.sendAction(
+                #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
+            )
+        }
+    }
+}
 
 // MARK: - Card surface
 
@@ -197,7 +214,9 @@ extension View {
     /// (sheets keep their Cancel/Done bar, but dark instead of the
     /// default light material).
     func hiddenNavBar() -> some View {
-        self.toolbar(.hidden, for: .navigationBar)
+        self
+            .toolbar(.hidden, for: .navigationBar)
+            .toolbarBackground(.hidden, for: .navigationBar)
     }
 
     func darkNavBar() -> some View {

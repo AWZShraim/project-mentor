@@ -16,7 +16,6 @@ struct ExercisesView: View {
                     Divider().overlay(Theme.border)
                     content
                 }
-                .background(AmbientBackground())
 
                 manageDaysButton
                     .padding(.trailing, 16)
@@ -60,12 +59,13 @@ struct ExercisesView: View {
                         }
                     }
                 }
-                .presentationDetents([.medium])
+                .presentationDetents([.large])
             }
             .task {
                 await viewModel.loadEntries()
             }
         }
+        .background(AmbientBackground())
     }
 
     private var manageDaysButton: some View {
@@ -103,6 +103,7 @@ struct ExercisesView: View {
                 }
                 .padding(18)
             }
+            .scrollDismissesKeyboard(.interactively)
             .tabBarSafeArea()
         }
     }
