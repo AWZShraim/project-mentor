@@ -4,6 +4,7 @@ import boto3
 import httpx
 from fastapi import Depends, Header, HTTPException
 from jose import jwt
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -85,6 +86,17 @@ def get_current_user(
 
     user = User(cognito_sub=sub, email=email)
     db.add(user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # A concurrent request for this same brand-new identity won the
+        # race and already inserted the row (the app fires several
+        # authenticated requests in parallel right after sign-in) - fall
+        # back to reading what it created instead of erroring out.
+        db.rollback()
+        user = db.query(User).filter_by(cognito_sub=sub).one_or_none()
+        if user is None:
+            raise
+        return user
     db.refresh(user)
     return user
