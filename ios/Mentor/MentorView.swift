@@ -28,7 +28,7 @@ struct MentorView: View {
             .task {
                 await viewModel.loadAll()
             }
-            .keyboardDismissButton()
+            .dismissKeyboardOnTap()
         }
     }
 
@@ -320,7 +320,6 @@ private struct WeightEntrySheet: View {
                 }
             }
             .dismissKeyboardOnTap()
-            .keyboardDismissButton()
         }
         .presentationDetents([.medium])
     }

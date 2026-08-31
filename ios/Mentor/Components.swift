@@ -15,27 +15,6 @@ extension View {
             )
         }
     }
-
-    /// Explicit, always-visible "X" in the keyboard's own accessory bar.
-    /// More reliable than tap/swipe dismissal in every case - notably a
-    /// focused .searchable() field, where the search UI holds the
-    /// navigation toolbar hostage (hiding Cancel/Add buttons) regardless
-    /// of scroll state, until the field is explicitly defocused.
-    func keyboardDismissButton() -> some View {
-        self.toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button {
-                    UIApplication.shared.sendAction(
-                        #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
-                    )
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(Theme.textSecondary)
-                }
-            }
-        }
-    }
 }
 
 // MARK: - Card surface

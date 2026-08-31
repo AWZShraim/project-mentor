@@ -20,6 +20,12 @@ struct MainTabView: View {
 
             FloatingTabBar(selectedTab: $selectedTab)
         }
+        // Without this, the keyboard pushes the whole ZStack - including
+        // the floating tab bar - up with it, so the bar ends up hovering
+        // awkwardly just above the keyboard instead of staying anchored
+        // at the true bottom of the screen (where it gets covered, same
+        // as a native tab bar would).
+        .ignoresSafeArea(.keyboard, edges: .bottom)
     }
 
     @ViewBuilder

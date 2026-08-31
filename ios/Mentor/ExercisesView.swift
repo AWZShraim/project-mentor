@@ -65,7 +65,7 @@ struct ExercisesView: View {
             .task {
                 await viewModel.loadEntries()
             }
-            .keyboardDismissButton()
+            .dismissKeyboardOnTap()
         }
     }
 

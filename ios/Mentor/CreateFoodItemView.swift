@@ -85,7 +85,7 @@ struct CreateFoodItemView: View {
                     .disabled(!isValid || isSaving)
                 }
             }
-            .keyboardDismissButton()
+            .dismissKeyboardOnTap()
         }
     }
 

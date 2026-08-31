@@ -115,7 +115,7 @@ private struct OpenFoodFactsSearchView: View {
             }
         }
         .background(Theme.background)
-        .keyboardDismissButton()
+        .dismissKeyboardOnTap()
         .sheet(item: $selectedProduct) { product in
             LogFoodQuantityView(
                 foodSource: .openFoodFacts(product),
@@ -219,7 +219,7 @@ private struct PersonalLibraryView: View {
         }
         .background(Theme.background)
         .searchable(text: $searchText, prompt: "Search your foods")
-        .keyboardDismissButton()
+        .dismissKeyboardOnTap()
         .sheet(item: $selectedItem) { item in
             LogFoodQuantityView(
                 foodSource: .personalItem(item),
