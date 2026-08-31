@@ -15,16 +15,40 @@ struct ExercisePickerView: View {
 
     var body: some View {
         NavigationStack {
-            List(filteredExercises) { exercise in
-                Button {
-                    toggle(exercise)
-                } label: {
-                    exerciseRow(exercise)
+            List {
+                if !selectedExercises.isEmpty {
+                    Section {
+                        ForEach(selectedExercises) { exercise in
+                            Button {
+                                toggle(exercise)
+                            } label: {
+                                exerciseRow(exercise)
+                            }
+                            .buttonStyle(.plain)
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                        }
+                    } header: {
+                        SectionHeader("Selected Exercises")
+                    }
                 }
-                .buttonStyle(.plain)
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-                .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+
+                Section {
+                    ForEach(availableExercises) { exercise in
+                        Button {
+                            toggle(exercise)
+                        } label: {
+                            exerciseRow(exercise)
+                        }
+                        .buttonStyle(.plain)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                    }
+                } header: {
+                    SectionHeader(searchText.isEmpty ? "All Exercises" : "Results")
+                }
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
@@ -60,9 +84,14 @@ struct ExercisePickerView: View {
         }
     }
 
-    private var filteredExercises: [Exercise] {
-        guard !searchText.isEmpty else { return exercises }
-        return exercises
+    private var selectedExercises: [Exercise] {
+        exercises.filter { selectedIDs.contains($0.id) }
+    }
+
+    private var availableExercises: [Exercise] {
+        let remaining = exercises.filter { !selectedIDs.contains($0.id) }
+        guard !searchText.isEmpty else { return remaining }
+        return remaining
             .filter { $0.name.localizedCaseInsensitiveContains(searchText) }
             .sorted { relevanceRank($0.name, matching: searchText) < relevanceRank($1.name, matching: searchText) }
     }

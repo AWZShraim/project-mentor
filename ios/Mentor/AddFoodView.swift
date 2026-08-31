@@ -239,21 +239,44 @@ private struct PersonalLibraryView: View {
     }
 
     private func foodRow(_ item: FoodItem) -> some View {
-        Button {
-            selectedItem = item
-        } label: {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(item.name)
-                    .font(.system(size: 14))
-                    .foregroundStyle(Theme.textPrimary)
-                Text("\(Int(item.calories)) kcal / \(formattedNumber(item.servingSize))\(item.servingUnit)")
-                    .font(.stat(11, weight: .medium))
-                    .foregroundStyle(Theme.purpleSoft)
+        HStack {
+            Button {
+                selectedItem = item
+            } label: {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.name)
+                        .font(.system(size: 14))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text("\(Int(item.calories)) kcal / \(formattedNumber(item.servingSize))\(item.servingUnit)")
+                        .font(.stat(11, weight: .medium))
+                        .foregroundStyle(Theme.purpleSoft)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .buttonStyle(.plain)
+
+            Button {
+                Task { await deleteItem(item) }
+            } label: {
+                Image(systemName: "trash")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.danger)
+            }
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
         .cardStyle(padding: 12)
+    }
+
+    private func deleteItem(_ item: FoodItem) async {
+        guard let token = AuthTokenStore.current else { return }
+        errorMessage = nil
+        do {
+            try await api.deleteFoodItem(id: item.id, accessToken: token)
+            items.removeAll { $0.id == item.id }
+            recentItems.removeAll { $0.id == item.id }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     private var filteredItems: [FoodItem] {

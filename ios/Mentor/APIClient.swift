@@ -12,15 +12,23 @@ struct MentorUser: Decodable, Identifiable {
 }
 
 enum APIError: Error, LocalizedError {
-    case server(Int)
+    case server(Int, message: String?)
     case invalidResponse
 
     var errorDescription: String? {
         switch self {
-        case .server(let code): return "API request failed (HTTP \(code))"
+        case .server(let code, let message):
+            // FastAPI's HTTPException(detail:) is the actual reason a
+            // request was rejected (e.g. "food item has logged entries") -
+            // surface that instead of a bare status code whenever present.
+            return message ?? "API request failed (HTTP \(code))"
         case .invalidResponse: return "Unexpected API response"
         }
     }
+}
+
+private struct ServerErrorBody: Decodable {
+    let detail: String
 }
 
 final class APIClient {
@@ -44,9 +52,9 @@ final class APIClient {
             return try await performRequest(
                 path, method: method, query: query, body: body, accessToken: accessToken
             )
-        } catch APIError.server(401) {
+        } catch APIError.server(401, _) {
             guard let newToken = await AuthTokenStore.refreshAccessToken() else {
-                throw APIError.server(401)
+                throw APIError.server(401, message: nil)
             }
             return try await performRequest(
                 path, method: method, query: query, body: body, accessToken: newToken
@@ -79,7 +87,9 @@ final class APIClient {
 
         let (data, response) = try await URLSession.shared.data(for: req)
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-            throw APIError.server((response as? HTTPURLResponse)?.statusCode ?? -1)
+            let code = (response as? HTTPURLResponse)?.statusCode ?? -1
+            let message = try? decoder.decode(ServerErrorBody.self, from: data).detail
+            throw APIError.server(code, message: message)
         }
         return data
     }
@@ -176,6 +186,12 @@ final class APIClient {
     func listRecentFoodItems(accessToken: String) async throws -> [FoodItem] {
         let data = try await request("food-items/recent", accessToken: accessToken)
         return try decoder.decode([FoodItem].self, from: data)
+    }
+
+    func deleteFoodItem(id: String, accessToken: String) async throws {
+        _ = try await request(
+            "food-items/\(id)", method: "DELETE", accessToken: accessToken
+        )
     }
 
     func createFoodItem(

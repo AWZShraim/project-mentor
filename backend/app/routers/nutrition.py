@@ -65,6 +65,32 @@ def create_food_item(
     return item
 
 
+@router.delete("/food-items/{item_id}", status_code=204)
+def delete_food_item(
+    item_id: uuid.UUID,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    item = db.get(models.PersonalFoodLibraryItem, item_id)
+    if item is None or item.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Food item not found")
+
+    has_logs = (
+        db.query(models.NutritionLog)
+        .filter(models.NutritionLog.food_item_id == item_id)
+        .first()
+        is not None
+    )
+    if has_logs:
+        raise HTTPException(
+            status_code=409,
+            detail="Can't delete a food item that has logged entries",
+        )
+
+    db.delete(item)
+    db.commit()
+
+
 @router.get("/nutrition-logs", response_model=list[schemas.NutritionLogOut])
 def list_nutrition_logs(
     date: date_type,

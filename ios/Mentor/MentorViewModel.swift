@@ -93,7 +93,7 @@ final class MentorViewModel: ObservableObject {
                 pendingAction = action
             }
             await loadDashboard()
-        } catch APIError.server(503) {
+        } catch APIError.server(503, _) {
             errorMessage = "Mentor isn't set up yet - it needs an Anthropic API key on the backend."
         } catch {
             errorMessage = error.localizedDescription

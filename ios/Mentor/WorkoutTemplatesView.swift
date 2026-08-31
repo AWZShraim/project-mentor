@@ -19,27 +19,33 @@ struct WorkoutTemplatesView: View {
                     ScrollView {
                         VStack(spacing: 10) {
                             ForEach(templates) { template in
-                                Button {
-                                    editingTemplate = template
-                                } label: {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(template.name)
-                                            .font(.system(size: 15, weight: .semibold))
-                                            .foregroundStyle(Theme.textPrimary)
-                                        Text(template.exercises.map(\.name).joined(separator: ", "))
-                                            .font(.caption)
-                                            .foregroundStyle(Theme.textSecondary)
-                                            .lineLimit(2)
+                                HStack {
+                                    Button {
+                                        editingTemplate = template
+                                    } label: {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(template.name)
+                                                .font(.system(size: 15, weight: .semibold))
+                                                .foregroundStyle(Theme.textPrimary)
+                                            Text(template.exercises.map(\.name).joined(separator: ", "))
+                                                .font(.caption)
+                                                .foregroundStyle(Theme.textSecondary)
+                                                .lineLimit(2)
+                                        }
+                                        .frame(maxWidth: .infinity, alignment: .leading)
                                     }
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                }
-                                .buttonStyle(.plain)
-                                .cardStyle()
-                                .contextMenu {
-                                    Button("Delete", role: .destructive) {
+                                    .buttonStyle(.plain)
+
+                                    Button {
                                         Task { await delete(template) }
+                                    } label: {
+                                        Image(systemName: "trash")
+                                            .font(.system(size: 13))
+                                            .foregroundStyle(Theme.danger)
                                     }
+                                    .buttonStyle(.plain)
                                 }
+                                .cardStyle()
                             }
 
                             Button {
