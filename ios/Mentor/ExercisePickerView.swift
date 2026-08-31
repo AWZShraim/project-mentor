@@ -46,6 +46,7 @@ struct ExercisePickerView: View {
                     }
                 }
             }
+            .keyboardDismissButton()
             .overlay {
                 if isLoading {
                     ProgressView()

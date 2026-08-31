@@ -202,6 +202,7 @@ struct CreateWorkoutTemplateView: View {
                     .disabled(name.isEmpty || selectedExercises.isEmpty || isSaving)
                 }
             }
+            .keyboardDismissButton()
             .overlay {
                 if isLoadingExercises {
                     ProgressView().tint(Theme.purple)

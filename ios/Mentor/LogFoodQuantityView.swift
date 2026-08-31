@@ -79,6 +79,7 @@ struct LogFoodQuantityView: View {
                     .disabled(Double(quantity) == nil || isSaving)
                 }
             }
+            .keyboardDismissButton()
         }
     }
 

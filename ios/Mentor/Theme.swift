@@ -86,24 +86,32 @@ struct AmbientBackground: View {
     var body: some View {
         ZStack {
             Theme.background
-            RadialGradient(
-                colors: [Theme.purple.opacity(0.20), Theme.purple.opacity(0.0)],
-                center: .top,
-                startRadius: 0,
-                endRadius: 380
+
+            // Full-bleed base wash so every region of the screen carries
+            // at least some purple tint - without this, the radial blooms
+            // below fade to flat Theme.background well before reaching
+            // the bottom of the screen, which read as a bug ("background
+            // doesn't cover that far") rather than an intentional glow.
+            LinearGradient(
+                colors: [Theme.purple.opacity(0.12), Theme.background],
+                startPoint: .top,
+                endPoint: .bottom
             )
-            .frame(height: 460)
-            .frame(maxWidth: .infinity)
-            .offset(y: -180)
 
             RadialGradient(
-                colors: [Theme.blue.opacity(0.10), Theme.blue.opacity(0.0)],
+                colors: [Theme.purple.opacity(0.22), Theme.purple.opacity(0.0)],
+                center: .top,
+                startRadius: 0,
+                endRadius: 700
+            )
+            .offset(y: -120)
+
+            RadialGradient(
+                colors: [Theme.blue.opacity(0.12), Theme.blue.opacity(0.0)],
                 center: .bottomTrailing,
                 startRadius: 0,
-                endRadius: 340
+                endRadius: 500
             )
-            .frame(height: 420)
-            .frame(maxWidth: .infinity)
         }
         .ignoresSafeArea()
     }

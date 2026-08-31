@@ -14,6 +14,7 @@ struct NutritionView: View {
                 Divider().overlay(Theme.border)
                 content
             }
+            .background(AmbientBackground())
             .hiddenNavBar()
             .sheet(isPresented: Binding(
                 get: { addingMealType != nil },
@@ -47,13 +48,12 @@ struct NutritionView: View {
                         }
                     }
                 }
-                .presentationDetents([.large])
+                .presentationDetents([.height(500)])
             }
             .task {
                 await viewModel.loadEntries()
             }
         }
-        .background(AmbientBackground())
     }
 
     @ViewBuilder

@@ -18,6 +18,7 @@ struct MentorView: View {
                 chatSection
             }
             .tabBarSafeArea()
+            .background(AmbientBackground())
             .hiddenNavBar()
             .sheet(isPresented: $showingWeightEntry) {
                 WeightEntrySheet { value, unit in
@@ -27,8 +28,8 @@ struct MentorView: View {
             .task {
                 await viewModel.loadAll()
             }
+            .keyboardDismissButton()
         }
-        .background(AmbientBackground())
     }
 
     // MARK: - Top half: dashboard
@@ -319,6 +320,7 @@ private struct WeightEntrySheet: View {
                 }
             }
             .dismissKeyboardOnTap()
+            .keyboardDismissButton()
         }
         .presentationDetents([.medium])
     }

@@ -36,6 +36,7 @@ struct SettingsView: View {
                 }
                 .tabBarSafeArea()
             }
+            .background(AmbientBackground())
             .hiddenNavBar()
             .task {
                 if auth.currentUser == nil {
@@ -43,7 +44,6 @@ struct SettingsView: View {
                 }
             }
         }
-        .background(AmbientBackground())
     }
 }
 
